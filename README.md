@@ -95,6 +95,8 @@ You can download the dataset used in this project from Yelp’s official page:
 - % of 5-star reviews per business
 - Month-wise review trends
 - Top 10 businesses by positive sentiment
+
+  
 ⸻
 
 ## 📌 Notes
@@ -102,6 +104,8 @@ You can download the dataset used in this project from Yelp’s official page:
 - Ensure that your Snowflake account has access to create UDFs.
 - Modify script paths and SQL table references as per your environment.
 - You can optionally bypass AWS S3 and directly upload files into Snowflake.
+
+  
 ⸻
 
 ## ✅ Future Improvements
