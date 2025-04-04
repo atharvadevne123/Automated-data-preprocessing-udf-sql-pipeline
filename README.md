@@ -81,7 +81,7 @@ This creates necessary tables and registers UDFs for sentiment classification.
 
 You can download the dataset used in this project from Yelp’s official page:
 
-🔗 Yelp Open Dataset
+🔗 [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/)
 
 Once downloaded, extract and place the following files in your working directory:
 	•	review.json (5GB, 7M+ reviews)
