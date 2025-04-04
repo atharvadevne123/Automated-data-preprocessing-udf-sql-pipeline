@@ -47,7 +47,7 @@ This project also includes a reusable data preprocessing and UDF integration pip
 
 1. Clone the Repository
 
-git clone https://github.com/yourusername/automated-data-pipeline-udf.git
+git clone https://github.com/atharvadevne123/Automated-data-preprocessing-udf-sql-pipeline.git
 cd automated-data-pipeline-udf
 
 2. Python Environment Setup
