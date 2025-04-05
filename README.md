@@ -1,6 +1,4 @@
-# Automated-data-preprocessing-udf-sql-pipeline
-
-📊 Automated Data Preprocessing and SQL-Based UDF Integration for Scalable Data Pipelines
+# 📊 Automated Data Preprocessing and SQL-Based UDF Integration for Scalable Data Pipelines
 
 📘 Project Description
 
