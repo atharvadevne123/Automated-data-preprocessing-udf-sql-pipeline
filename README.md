@@ -1,92 +1,111 @@
-# 📊 Automated Data Preprocessing and SQL-Based UDF Integration for Scalable Data Pipelines
+# Automated Data Preprocessing & SQL-Based UDF Integration
 
-📘 Project Description
+[![CI](https://github.com/atharvadevne123/Automated-data-preprocessing-udf-sql-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/atharvadevne123/Automated-data-preprocessing-udf-sql-pipeline/actions/workflows/ci.yml)
 
-This is an end-to-end data analytics project built around the Yelp Open Dataset, performing both sentiment analysis and general data analysis. The goal is to demonstrate how to build a scalable data pipeline using real-world JSON data, cloud storage, Python-based file preprocessing, Snowflake as a data warehouse, and advanced SQL for analytics.
+An end-to-end data analytics project built around the Yelp Open Dataset, performing sentiment analysis and general data analysis using Python, Snowflake SQL UDFs, and AWS S3.
 
-This project also includes a reusable data preprocessing and UDF integration pipeline that can be extended to other datasets and platforms.
+---
 
-⸻
+## Features
 
-## 🔄 Project Workflow Summary
+- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI, with full error handling and a fix for the off-by-one remainder bug
+- **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative
+- **Flattened analytical tables** — `tbl_yelp_reviews` and `tbl_yelp_businesses` ready for SQL analytics
+- **Automated tests** — 8-test pytest suite covering edge cases (remainder lines, empty file, invalid args, JSON integrity)
+- **GitHub Actions CI** — lint (ruff) + test on every push/PR
+- **Secure credential handling** — no credentials in code; `.env.example` provided
 
-- Download and preprocess the Yelp JSON dataset (5GB+ with 7M+ reviews)
-- Use Python to split large files into manageable chunks
-- Upload chunks to AWS S3 and ingest into Snowflake using SQL `COPY INTO`
-- Flatten JSON into relational tables using Snowflake SQL
-- Perform sentiment analysis via Python UDF integrated within Snowflake
-- Execute SQL-based analytical queries to derive business insights
+---
 
-⸻
+## Project Structure
 
-## 📂 Project Structure
-
-
-````plaintext
-├── split_files.py            # Python script for splitting large files into manageable chunks
-├── UDF and tables.sql        # SQL script for creating UDFs and required tables
-├── yelp_data_pipeline.drawio # Editable system architecture diagram
-├── yelp_data_pipeline.png    # Visual overview of the end-to-end pipeline
-├── README.md                 # Project overview and usage instructions
-````
-
-⸻
-
-## 🧰 Technologies Used
-
-- **Python 3.x**
-- **Snowflake SQL**
-- **Amazon S3**
-- **TextBlob** (Python library for sentiment analysis)
-- **Draw.io** (for architecture diagram)
-- **Pandas** (optional, for file manipulation)
-⸻
-
-🛠️ Setup Instructions
-
-1. Clone the Repository
 ```
+├── split_files.py              # CLI tool: split large JSON files
+├── UDF and tables.sql          # Snowflake UDFs and table DDL
+├── tests/
+│   └── test_split_files.py     # pytest suite (8 tests)
+├── .github/workflows/ci.yml    # GitHub Actions CI
+├── .env.example                # Template for environment variables
+├── requirements.txt            # Python dependencies
+└── README.md
+```
+
+---
+
+## Setup
+
+### 1. Clone
+
+```bash
 git clone https://github.com/atharvadevne123/Automated-data-preprocessing-udf-sql-pipeline.git
-cd automated-data-pipeline-udf
+cd Automated-data-preprocessing-udf-sql-pipeline
 ```
-2. Python Environment Setup
 
-Ensure Python 3.x is installed. You can install dependencies using:
-```
+### 2. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
-If requirements.txt is not present, install manually:
+
+### 3. Configure environment variables
+
+```bash
+cp .env.example .env
+# Edit .env with your Snowflake and AWS credentials
 ```
-pip install pandas textblob
+
+### 4. Split a large JSON file
+
+```bash
+# Basic usage (defaults: 10 output files, prefix split_file_)
+python split_files.py yelp_academic_dataset_review.json
+
+# Custom options
+python split_files.py yelp_academic_dataset_review.json \
+    --num-files 20 \
+    --output-prefix chunks/review_chunk_
 ```
-3. Run the File Splitter
+
+### 5. Snowflake SQL setup
+
+Open a Snowflake SQL worksheet and execute `UDF and tables.sql`.  
+Replace the `$AWS_KEY_ID` / `$AWS_SECRET_KEY` placeholders with your actual values, or configure a [Snowflake storage integration](https://docs.snowflake.com/en/user-guide/data-load-s3-config-storage-integration) to avoid inline credentials.
+
+---
+
+## Running Tests
+
+```bash
+pytest -v --tb=short
 ```
-python split_files.py
-```
-Make sure to update split_files.py with the correct path to your large input file.
 
-4. SQL Setup
+Expected output: **8 passed**.
 
-Connect to Snowflake and execute the provided SQL file:
-```
--- Inside Snowflake SQL worksheet
-\i 'UDF and tables.sql'
-```
-This creates necessary tables and registers UDFs for sentiment classification.
+---
 
-⸻
+## Technologies
 
-## 🧾 Dataset
+| Tool | Purpose |
+|------|---------|
+| Python 3.x | File splitting CLI |
+| Snowflake SQL | Data warehouse, UDF runtime |
+| Amazon S3 | Raw data staging |
+| TextBlob | Sentiment analysis |
+| pytest | Unit testing |
+| ruff | Linting |
+| GitHub Actions | CI/CD |
 
-You can download the dataset used in this project from Yelp’s official page:
+---
 
-🔗 [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/)
+## Dataset
 
-⸻
+Download from the official [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/) page.
 
-## 💡 Example Analysis Performed
+---
 
-- Top 10 users with most restaurant reviews
+## Example Analyses
+
+- Top 10 users by restaurant review count
 - Most popular business categories
 - Top 3 recent reviews per business
 - Sentiment distribution across cities
@@ -94,28 +113,25 @@ You can download the dataset used in this project from Yelp’s official page:
 - Month-wise review trends
 - Top 10 businesses by positive sentiment
 
-  
-⸻
+---
 
-## 📌 Notes
+## Environment Variables
 
-- Ensure that your Snowflake account has access to create UDFs.
-- Modify script paths and SQL table references as per your environment.
-- You can optionally bypass AWS S3 and directly upload files into Snowflake.
+| Variable | Description |
+|----------|-------------|
+| `SNOWFLAKE_ACCOUNT` | Snowflake account identifier |
+| `SNOWFLAKE_USER` | Snowflake username |
+| `SNOWFLAKE_PASSWORD` | Snowflake password |
+| `SNOWFLAKE_WAREHOUSE` | Compute warehouse name |
+| `SNOWFLAKE_DATABASE` | Target database |
+| `SNOWFLAKE_SCHEMA` | Target schema (default: PUBLIC) |
+| `AWS_KEY_ID` | AWS access key for S3 |
+| `AWS_SECRET_KEY` | AWS secret key for S3 |
+| `S3_BUCKET` | S3 bucket name |
+| `S3_PREFIX` | S3 key prefix (default: yelp/) |
 
-  
-⸻
+---
 
-## ✅ Future Improvements
+## Author
 
-- Add unit tests for Python logic
-- Include support for Google Cloud / Azure Storage
-- Automate UDF deployment with CI/CD
-- Explore BERT-based sentiment scoring
-
-⸻
-
-## 👨‍💻 Author
-
-**Atharva Devne**  
-
+**Atharva Devne**
