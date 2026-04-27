@@ -13,3 +13,18 @@ authors = [{name = "atharvadevne123", email = "devneatharva@gmail.com"}]
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "setup.py"]
+
+[tool.coverage.report]
+fail_under = 75

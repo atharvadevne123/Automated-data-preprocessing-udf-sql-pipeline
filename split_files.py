@@ -35,6 +35,16 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
     if total_lines == 0:
         raise ValueError(f"Input file is empty: {input_file}")
 
+    # Cap num_files so every output file gets at least one line
+    if num_files > total_lines:
+        logger.warning(
+            "num_files (%d) exceeds total lines (%d); capping at %d",
+            num_files,
+            total_lines,
+            total_lines,
+        )
+        num_files = total_lines
+
     lines_per_file = total_lines // num_files
     remainder = total_lines % num_files
     logger.info("Total lines: %d, ~%d lines per file", total_lines, lines_per_file)
@@ -85,6 +95,12 @@ def main() -> None:
         help="Prefix for output filenames (default: split_file_)",
     )
     parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Directory for output files; created if it does not exist (default: current directory)",
+    )
+    parser.add_argument(
         "--num-files",
         type=int,
         default=10,
@@ -92,8 +108,17 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    prefix = args.output_prefix
+    if args.output_dir is not None:
+        try:
+            args.output_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            logger.error("Cannot create output directory %s: %s", args.output_dir, e)
+            sys.exit(1)
+        prefix = str(args.output_dir / args.output_prefix)
+
     try:
-        split_file(args.input_file, args.output_prefix, args.num_files)
+        split_file(args.input_file, prefix, args.num_files)
     except (FileNotFoundError, ValueError, OSError) as e:
         logger.error("%s", e)
         sys.exit(1)

@@ -5,6 +5,7 @@
 ![Snowflake](https://img.shields.io/badge/Snowflake-SQL-29B5E8?logo=snowflake)
 ![AWS S3](https://img.shields.io/badge/AWS-S3-FF9900?logo=amazonaws)
 ![TextBlob](https://img.shields.io/badge/NLP-TextBlob-green)
+![Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)
 
 An end-to-end data analytics pipeline built around the **Yelp Open Dataset** — splitting 5 GB+ JSON files, loading into Snowflake via S3, running Python-based sentiment UDFs, and querying flattened analytical tables.
 
@@ -84,45 +85,31 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[Input: large .json file] --> B[Count total lines]
-    B --> C[lines_per_file = total ÷ N\nremainder = total mod N]
-    C --> D{For each chunk i}
-    D -->|i < N-1| E[Write lines_per_file lines]
-    D -->|i == N-1 last chunk| F[Write lines_per_file\n+ remainder lines]
-    E & F --> G{More chunks?}
-    G -->|Yes| D
-    G -->|No| H[✅ N output files\nno lines dropped]
+    B --> C{num_files > total_lines?}
+    C -->|Yes| D[Cap num_files = total_lines\nLog warning]
+    C -->|No| E[lines_per_file = total ÷ N\nremainder = total mod N]
+    D --> E
+    E --> F{For each chunk i}
+    F -->|i < N-1| G[Write lines_per_file lines]
+    F -->|i == N-1 last chunk| H[Write lines_per_file\n+ remainder lines]
+    G & H --> I{More chunks?}
+    I -->|Yes| F
+    I -->|No| J[✅ N output files\nno lines dropped]
 ```
 
 ---
 
 ## Features
 
-- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI, with a fix for the off-by-one remainder bug
+- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI; safely caps `--num-files` when it exceeds the line count so every output file gets at least one record
+- **`--output-dir` support** — write all chunks to a dedicated directory (auto-created); combine with `--output-prefix` for full control over naming
 - **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative
 - **Flattened analytical tables** — `tbl_yelp_reviews` and `tbl_yelp_businesses` ready for SQL analytics
-- **Automated tests** — 8-test pytest suite covering edge cases
-- **GitHub Actions CI** — lint (ruff) + test on every push/PR
-- **Secure credential handling** — no credentials in code; `.env.example` provided
-
----
-
-## Test Results
-
-```
-platform darwin -- Python 3.9, pytest-8.4.2
-collected 8 items
-
-tests/test_split_files.py::test_count_lines                  PASSED
-tests/test_split_files.py::test_split_file_basic             PASSED
-tests/test_split_files.py::test_split_file_remainder         PASSED
-tests/test_split_files.py::test_split_file_not_found         PASSED
-tests/test_split_files.py::test_split_file_invalid_num_files PASSED
-tests/test_split_files.py::test_split_single_file            PASSED
-tests/test_split_files.py::test_split_more_files_than_lines  PASSED
-tests/test_split_files.py::test_split_preserves_valid_json   PASSED
-
-========================= 8 passed in 0.04s =========================
-```
+- **`snowflake_connector.py`** — utility module that reads Snowflake credentials exclusively from environment variables / `.env`; raises clear `EnvironmentError` listing missing vars; lazy-imports `snowflake-connector-python` so the splitter works without it
+- **Expanded test suite** — 19 pytest tests (81 % coverage), including edge cases for the cap logic, `--output-dir`, and a fully mocked Snowflake connector
+- **GitHub Actions CI** — ruff lint + mypy type-check + pytest with coverage threshold on every push/PR
+- **Docker support** — `Dockerfile` included for containerised runs
+- **Secure credential handling** — no credentials in code; `.env.example` provided; `python-dotenv` auto-loads `.env` when present
 
 ---
 
@@ -130,13 +117,17 @@ tests/test_split_files.py::test_split_preserves_valid_json   PASSED
 
 ```
 ├── split_files.py              # CLI tool: split large JSON files
+├── snowflake_connector.py      # Snowflake connection utility (env-based)
 ├── UDF and tables.sql          # Snowflake UDFs and table DDL
+├── Dockerfile                  # Container image for split_files.py
 ├── Data pipeline.png           # Pipeline architecture diagram
 ├── tests/
-│   └── test_split_files.py     # pytest suite (8 tests)
-├── .github/workflows/ci.yml    # GitHub Actions CI
+│   ├── test_split_files.py     # pytest suite (14 tests)
+│   └── test_snowflake_connector.py  # pytest suite (5 tests)
+├── .github/workflows/ci.yml    # GitHub Actions CI (lint + mypy + pytest-cov)
 ├── .env.example                # Template for environment variables
 ├── requirements.txt            # Python dependencies
+├── pyproject.toml              # Build + tool configuration
 └── README.md
 ```
 
@@ -167,27 +158,39 @@ cp .env.example .env
 ### 4. Split a large JSON file
 
 ```bash
-# Defaults: 10 output files, prefix split_file_
+# Defaults: 10 output files, prefix split_file_, current directory
 python split_files.py yelp_academic_dataset_review.json
 
-# Custom options
+# Write chunks to a dedicated directory
 python split_files.py yelp_academic_dataset_review.json \
     --num-files 20 \
-    --output-prefix chunks/review_chunk_
+    --output-dir chunks/ \
+    --output-prefix review_
+
+# num-files is automatically capped to total line count if it exceeds it
+python split_files.py small.json --num-files 1000  # caps to actual line count
 ```
 
 **Example output:**
 
 ```
 INFO: Counting lines in yelp_academic_dataset_review.json ...
-INFO: Total lines: 6990280, ~699028 lines per file
-INFO: Written chunks/review_chunk_1.json (699028 lines)
-INFO: Written chunks/review_chunk_2.json (699028 lines)
+INFO: Total lines: 6990280, ~349514 lines per file
+INFO: Written chunks/review_1.json (349514 lines)
+INFO: Written chunks/review_2.json (349514 lines)
 ...
 INFO: Done — split into 20 file(s).
 ```
 
-### 5. Snowflake SQL setup
+### 5. Docker
+
+```bash
+docker build -t yelp-splitter .
+docker run --rm -v $(pwd):/data yelp-splitter /data/yelp_academic_dataset_review.json \
+    --num-files 10 --output-dir /data/chunks
+```
+
+### 6. Snowflake SQL setup
 
 Open a Snowflake SQL worksheet and execute `UDF and tables.sql`.  
 Replace `$AWS_KEY_ID` / `$AWS_SECRET_KEY` placeholders with actual values, or configure a [Snowflake storage integration](https://docs.snowflake.com/en/user-guide/data-load-s3-config-storage-integration).
@@ -197,7 +200,37 @@ Replace `$AWS_KEY_ID` / `$AWS_SECRET_KEY` placeholders with actual values, or co
 ## Running Tests
 
 ```bash
+# Basic
 pytest -v --tb=short
+
+# With coverage report
+pytest -v --tb=short --cov=. --cov-report=term-missing
+```
+
+**Latest results (19 tests, 81 % coverage):**
+
+```
+tests/test_snowflake_connector.py::test_get_connection_params_missing_vars  PASSED
+tests/test_snowflake_connector.py::test_get_connection_params_partial_missing PASSED
+tests/test_snowflake_connector.py::test_get_connection_params_all_set       PASSED
+tests/test_snowflake_connector.py::test_get_connection_no_snowflake_package PASSED
+tests/test_snowflake_connector.py::test_get_connection_success              PASSED
+tests/test_split_files.py::test_count_lines                                 PASSED
+tests/test_split_files.py::test_split_file_basic                            PASSED
+tests/test_split_files.py::test_split_file_remainder                        PASSED
+tests/test_split_files.py::test_split_file_not_found                        PASSED
+tests/test_split_files.py::test_split_file_invalid_num_files                PASSED
+tests/test_split_files.py::test_split_single_file                           PASSED
+tests/test_split_files.py::test_split_more_files_than_lines                 PASSED
+tests/test_split_files.py::test_split_preserves_valid_json                  PASSED
+tests/test_split_files.py::test_split_num_files_exceeds_lines_is_capped     PASSED
+tests/test_split_files.py::test_split_output_dir_creates_directory          PASSED
+tests/test_split_files.py::test_split_output_dir_combined_with_prefix       PASSED
+tests/test_split_files.py::test_main_missing_input_exits_1                  PASSED
+tests/test_split_files.py::test_main_runs_with_output_dir                   PASSED
+tests/test_split_files.py::test_main_default_prefix                         PASSED
+
+========================= 19 passed =========================
 ```
 
 ---
@@ -238,12 +271,15 @@ GROUP BY b.name, b.city ORDER BY positive_reviews DESC LIMIT 10;
 
 | Tool | Purpose |
 |------|---------|
-| Python 3.x | File splitting CLI |
+| Python 3.9+ | File splitting CLI, connector utility |
 | Snowflake SQL | Data warehouse + UDF runtime |
 | Amazon S3 | Raw data staging |
 | TextBlob | Sentiment analysis (Positive / Neutral / Negative) |
-| pytest | Unit testing (8 tests) |
+| pytest + pytest-cov | Unit testing (19 tests, 81 % coverage) |
 | ruff | Linting |
+| mypy | Static type checking |
+| python-dotenv | `.env` loading |
+| Docker | Container support |
 | GitHub Actions | CI/CD |
 
 ---

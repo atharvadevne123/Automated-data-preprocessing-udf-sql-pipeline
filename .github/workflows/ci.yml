@@ -23,5 +23,8 @@ jobs:
       - name: Lint with ruff
         run: ruff check . --select E,F,W,I --ignore E501
 
-      - name: Run tests
-        run: pytest -v --tb=short
+      - name: Type-check with mypy
+        run: mypy split_files.py snowflake_connector.py --ignore-missing-imports
+
+      - name: Run tests with coverage
+        run: pytest -v --tb=short --cov=. --cov-report=term-missing --cov-fail-under=75
