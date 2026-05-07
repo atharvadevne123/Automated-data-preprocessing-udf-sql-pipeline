@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Split large newline-delimited JSON files into smaller chunks."""
 
+from __future__ import annotations
+
 import argparse
 import logging
 import sys
@@ -9,9 +11,36 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
+__version__ = "1.1.0"
+
+
+def get_file_size_mb(filepath: Path) -> float:
+    """Return the file size of *filepath* in megabytes.
+
+    Args:
+        filepath: Path to the file.
+
+    Returns:
+        File size in MB, or 0.0 if the file does not exist.
+    """
+    try:
+        return filepath.stat().st_size / (1024 * 1024)
+    except OSError:
+        return 0.0
+
 
 def count_lines(filepath: Path) -> int:
-    """Count total lines in a file efficiently."""
+    """Count total lines in a file efficiently.
+
+    Args:
+        filepath: Path to the file to count.
+
+    Returns:
+        Total number of lines.
+
+    Raises:
+        OSError: if the file cannot be read.
+    """
     count = 0
     try:
         with open(filepath, encoding="utf-8") as f:
@@ -24,13 +53,30 @@ def count_lines(filepath: Path) -> int:
 
 
 def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str]:
-    """Split input_file into num_files chunks; return list of output paths."""
+    """Split *input_file* into *num_files* chunks and return list of output paths.
+
+    The last chunk absorbs any remainder lines so that no records are dropped.
+
+    Args:
+        input_file: Path to the source newline-delimited JSON file.
+        output_prefix: String prefix for each output filename (e.g. ``"split_file_"``).
+        num_files: Desired number of output files (>= 1).
+
+    Returns:
+        Ordered list of output file paths that were written.
+
+    Raises:
+        FileNotFoundError: if *input_file* does not exist.
+        ValueError: if *num_files* < 1 or *input_file* is empty.
+        OSError: on read/write failures.
+    """
     if not input_file.exists():
         raise FileNotFoundError(f"Input file not found: {input_file}")
     if num_files < 1:
         raise ValueError(f"num_files must be >= 1, got {num_files}")
 
-    logger.info("Counting lines in %s ...", input_file)
+    file_size_mb = get_file_size_mb(input_file)
+    logger.info("Counting lines in %s (%.2f MB) ...", input_file, file_size_mb)
     total_lines = count_lines(input_file)
     if total_lines == 0:
         raise ValueError(f"Input file is empty: {input_file}")
@@ -47,7 +93,12 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
 
     lines_per_file = total_lines // num_files
     remainder = total_lines % num_files
-    logger.info("Total lines: %d, ~%d lines per file", total_lines, lines_per_file)
+    logger.info(
+        "Total lines: %d, chunks: %d, ~%d lines/chunk",
+        total_lines,
+        num_files,
+        lines_per_file,
+    )
 
     output_files: list[str] = []
     try:
@@ -66,7 +117,13 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
                             out.write(line)
                             written += 1
                     output_files.append(output_filename)
-                    logger.info("Written %s (%d lines)", output_filename, written)
+                    chunk_size_mb = get_file_size_mb(Path(output_filename))
+                    logger.info(
+                        "Written %s (%d lines, %.3f MB)",
+                        output_filename,
+                        written,
+                        chunk_size_mb,
+                    )
                 except OSError as e:
                     logger.error("Failed to write %s: %s", output_filename, e)
                     raise
@@ -79,6 +136,7 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
 
 
 def main() -> None:
+    """CLI entry point for splitting large JSONL files."""
     parser = argparse.ArgumentParser(
         description="Split a large newline-delimited JSON file into smaller chunks."
     )
@@ -105,6 +163,11 @@ def main() -> None:
         type=int,
         default=10,
         help="Number of output files to split into (default: 10)",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     args = parser.parse_args()
 
