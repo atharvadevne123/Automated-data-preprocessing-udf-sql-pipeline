@@ -199,3 +199,56 @@ def test_main_default_prefix(sample_json_file: Path, tmp_path: Path) -> None:
         main()
     assert (out_dir / "split_file_1.json").exists()
     assert (out_dir / "split_file_2.json").exists()
+
+
+# ---------- Parametrized edge-case tests ----------
+
+
+@pytest.mark.parametrize(
+    "num_files,expected_chunks",
+    [
+        (1, 1),
+        (5, 5),
+        (25, 25),
+    ],
+)
+def test_split_file_chunk_counts(
+    sample_json_file: Path, tmp_path: Path, num_files: int, expected_chunks: int
+) -> None:
+    prefix = str(tmp_path / f"p{num_files}_")
+    outputs = split_file(sample_json_file, prefix, num_files)
+    assert len(outputs) == expected_chunks
+    assert sum(_line_count(f) for f in outputs) == 25
+
+
+@pytest.mark.parametrize("prefix", ["out_", "chunk_", "part_", "file-", "x"])
+def test_split_file_custom_prefixes(
+    sample_json_file: Path, tmp_path: Path, prefix: str
+) -> None:
+    full_prefix = str(tmp_path / prefix)
+    outputs = split_file(sample_json_file, full_prefix, 3)
+    assert len(outputs) == 3
+    for path in outputs:
+        assert Path(path).name.startswith(prefix)
+
+
+@pytest.mark.parametrize("bad_num", [-1, 0, -100])
+def test_split_file_rejects_invalid_num_files(
+    sample_json_file: Path, tmp_path: Path, bad_num: int
+) -> None:
+    with pytest.raises(ValueError):
+        split_file(sample_json_file, str(tmp_path / "out_"), bad_num)
+
+
+@pytest.mark.parametrize("record_count", [1, 7, 13, 100])
+def test_split_file_various_record_counts(tmp_path: Path, record_count: int) -> None:
+    import json as _json
+
+    filepath = tmp_path / "records.json"
+    with open(filepath, "w", encoding="utf-8") as f:
+        for i in range(record_count):
+            f.write(_json.dumps({"id": i}) + "\n")
+    prefix = str(tmp_path / "out_")
+    num = min(5, record_count)
+    outputs = split_file(filepath, prefix, num)
+    assert sum(_line_count(o) for o in outputs) == record_count
