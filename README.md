@@ -103,13 +103,17 @@ flowchart TD
 
 - **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI; safely caps `--num-files` when it exceeds the line count so every output file gets at least one record
 - **`--output-dir` support** — write all chunks to a dedicated directory (auto-created); combine with `--output-prefix` for full control over naming
+- **`--version` flag** — display the current tool version
 - **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative
 - **Flattened analytical tables** — `tbl_yelp_reviews` and `tbl_yelp_businesses` ready for SQL analytics
-- **`snowflake_connector.py`** — utility module that reads Snowflake credentials exclusively from environment variables / `.env`; raises clear `EnvironmentError` listing missing vars; lazy-imports `snowflake-connector-python` so the splitter works without it
-- **Expanded test suite** — 19 pytest tests (81 % coverage), including edge cases for the cap logic, `--output-dir`, and a fully mocked Snowflake connector
-- **GitHub Actions CI** — ruff lint + mypy type-check + pytest with coverage threshold on every push/PR
-- **Docker support** — `Dockerfile` included for containerised runs
-- **Secure credential handling** — no credentials in code; `.env.example` provided; `python-dotenv` auto-loads `.env` when present
+- **`snowflake_connector.py`** — reads credentials from env vars; `execute_query()`, `health_check()`, `managed_connection()` context manager, `SNOWFLAKE_ROLE` support
+- **`utils/` package** — structured logging (`utils/logger.py`), input/output validators (`utils/validators.py`), metrics tracking (`utils/metrics.py`)
+- **`scripts/validate_jsonl.py`** — standalone CLI to validate any JSONL file before loading
+- **`scripts/benchmark.py`** — measure split throughput on synthetic datasets
+- **Expanded test suite** — 140+ parametrized pytest tests across 12 test modules (90 %+ coverage)
+- **GitHub Actions CI** — ruff lint + mypy type-check + pytest matrix (Python 3.10 / 3.11 / 3.12) with coverage artifacts on every push/PR
+- **Docker support** — multi-stage `Dockerfile` + `docker-compose.yml`
+- **Secure credential handling** — no credentials in code; `.env.example` with full comments; `python-dotenv` auto-loads `.env`
 
 ---
 
