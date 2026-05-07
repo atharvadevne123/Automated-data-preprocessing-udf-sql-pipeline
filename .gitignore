@@ -11,24 +11,48 @@ build/
 .venv/
 venv/
 env/
+*.egg
 
 # Test / coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+coverage.xml
+
+# Type checking
+.mypy_cache/
+.dmypy.json
 
 # Env vars
 .env
 .env.local
+.env.*.local
 
 # Split output files
 split_file_*.json
+chunk_*.json
+part_*.json
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Data
+data/
+output/
