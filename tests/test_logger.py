@@ -51,18 +51,19 @@ def test_get_logger_handler_is_stream() -> None:
     assert any(isinstance(h, logging.StreamHandler) for h in logger.handlers)
 
 
-def test_configure_root_logger_sets_level() -> None:
-    configure_root_logger("WARNING")
+@pytest.mark.parametrize(
+    "level_str,expected",
+    [
+        ("WARNING", logging.WARNING),
+        ("INFO", logging.INFO),
+        ("DEBUG", logging.DEBUG),
+        ("ERROR", logging.ERROR),
+    ],
+)
+def test_configure_root_logger_sets_level(level_str: str, expected: int) -> None:
+    configure_root_logger(level_str)
     root = logging.getLogger()
-    assert root.level == logging.WARNING
-
-
-def test_configure_root_logger_info() -> None:
-    configure_root_logger("INFO")
-    root = logging.getLogger()
-    assert root.level == logging.INFO
-    # restore a neutral level so later tests aren't affected
-    configure_root_logger("WARNING")
+    assert root.level == expected
 
 
 def test_get_logger_invalid_level_falls_back_to_info() -> None:
