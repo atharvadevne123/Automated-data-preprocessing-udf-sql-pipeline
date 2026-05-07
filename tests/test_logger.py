@@ -61,6 +61,8 @@ def test_configure_root_logger_info() -> None:
     configure_root_logger("INFO")
     root = logging.getLogger()
     assert root.level == logging.INFO
+    # restore a neutral level so later tests aren't affected
+    configure_root_logger("WARNING")
 
 
 def test_get_logger_invalid_level_falls_back_to_info() -> None:
