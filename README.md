@@ -293,16 +293,23 @@ GROUP BY b.name, b.city ORDER BY positive_reviews DESC LIMIT 10;
 
 | Tool | Purpose |
 |------|---------|
-| Python 3.9+ | File splitting CLI, connector utility |
+| Python 3.9+ | File splitting CLI, connector utility, utils |
 | Snowflake SQL | Data warehouse + UDF runtime |
 | Amazon S3 | Raw data staging |
 | TextBlob | Sentiment analysis (Positive / Neutral / Negative) |
-| pytest + pytest-cov | Unit testing (19 tests, 81 % coverage) |
-| ruff | Linting |
+| pytest + pytest-cov | 140+ tests (90 %+ coverage), Python 3.10–3.12 matrix |
+| ruff | Linting and import sorting |
 | mypy | Static type checking |
 | python-dotenv | `.env` loading |
-| Docker | Container support |
-| GitHub Actions | CI/CD |
+| Docker | Multi-stage container build |
+| docker-compose | Container orchestration |
+| GitHub Actions | CI/CD with coverage artifacts |
+| pre-commit | Local hook runner (ruff + mypy) |
+| make | Developer workflow automation |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and pull-request guidelines. All contributions are welcome — please open an issue first for significant changes.
 
 ---
 
