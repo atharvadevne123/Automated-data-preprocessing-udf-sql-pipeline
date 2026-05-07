@@ -306,20 +306,81 @@ GROUP BY b.name, b.city ORDER BY positive_reviews DESC LIMIT 10;
 
 ---
 
+## API Reference
+
+### `split_files.py` CLI
+
+```
+python split_files.py [INPUT_FILE] [OPTIONS]
+
+Arguments:
+  INPUT_FILE           Path to a newline-delimited JSON file
+                       (default: yelp_academic_dataset_review.json)
+
+Options:
+  --num-files N        Number of output chunks (default: 10)
+  --output-prefix STR  Filename prefix (default: split_file_)
+  --output-dir DIR     Output directory (created if needed)
+  --version            Show version and exit
+  -h, --help           Show help
+```
+
+### `scripts/validate_jsonl.py` CLI
+
+```
+python -m scripts.validate_jsonl FILE [OPTIONS]
+
+Arguments:
+  FILE              Path to the JSONL file to validate
+
+Options:
+  --max-errors N    Stop after N errors (default: 10)
+  --quiet           Suppress success output
+
+Exit codes: 0 = valid, 1 = invalid, 2 = usage error
+```
+
+### `snowflake_connector` module
+
+```python
+from snowflake_connector import (
+    get_connection_params,   # -> dict[str, Any]
+    get_connection,          # -> snowflake.connector.Connection
+    managed_connection,      # context manager
+    execute_query,           # (conn, sql, params?) -> list[tuple]
+    health_check,            # (conn) -> bool
+    get_connection_iterator, # (conn, sql, params?) -> Iterator[tuple]
+)
+```
+
+### `utils` package
+
+```python
+from utils.logger import get_logger, configure_root_logger
+from utils.validators import (
+    validate_input_path, validate_num_files,
+    validate_jsonl_file, validate_output_prefix, coerce_record,
+    ValidationError,
+)
+from utils.metrics import SplitMetrics, Timer
+```
+
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `SNOWFLAKE_ACCOUNT` | Snowflake account identifier |
-| `SNOWFLAKE_USER` | Snowflake username |
-| `SNOWFLAKE_PASSWORD` | Snowflake password |
-| `SNOWFLAKE_WAREHOUSE` | Compute warehouse name |
-| `SNOWFLAKE_DATABASE` | Target database |
-| `SNOWFLAKE_SCHEMA` | Target schema (default: PUBLIC) |
-| `AWS_KEY_ID` | AWS access key for S3 |
-| `AWS_SECRET_KEY` | AWS secret key for S3 |
-| `S3_BUCKET` | S3 bucket name |
-| `S3_PREFIX` | S3 key prefix (default: yelp/) |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SNOWFLAKE_ACCOUNT` | Yes | Snowflake account identifier |
+| `SNOWFLAKE_USER` | Yes | Snowflake username |
+| `SNOWFLAKE_PASSWORD` | Yes | Snowflake password |
+| `SNOWFLAKE_WAREHOUSE` | Yes | Compute warehouse name |
+| `SNOWFLAKE_DATABASE` | Yes | Target database |
+| `SNOWFLAKE_SCHEMA` | No | Target schema (default: PUBLIC) |
+| `SNOWFLAKE_ROLE` | No | Snowflake role to assume |
+| `LOG_LEVEL` | No | Logging level: DEBUG/INFO/WARNING/ERROR (default: INFO) |
+| `AWS_KEY_ID` | No | AWS access key for S3 |
+| `AWS_SECRET_KEY` | No | AWS secret key for S3 |
+| `S3_BUCKET` | No | S3 bucket name |
+| `S3_PREFIX` | No | S3 key prefix (default: yelp/) |
 
 ---
 
