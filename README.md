@@ -120,19 +120,41 @@ flowchart TD
 ## Project Structure
 
 ```
-├── split_files.py              # CLI tool: split large JSON files
-├── snowflake_connector.py      # Snowflake connection utility (env-based)
+├── split_files.py              # CLI: split large JSONL files
+├── snowflake_connector.py      # Snowflake connection + query helpers
 ├── UDF and tables.sql          # Snowflake UDFs and table DDL
-├── Dockerfile                  # Container image for split_files.py
+├── Dockerfile                  # Multi-stage container image
+├── docker-compose.yml          # Docker compose (pipeline + test services)
 ├── Data pipeline.png           # Pipeline architecture diagram
+├── utils/
+│   ├── logger.py               # Structured logging configuration
+│   ├── validators.py           # Input / output validation helpers
+│   └── metrics.py              # SplitMetrics dataclass and Timer
+├── scripts/
+│   ├── validate_jsonl.py       # CLI: validate JSONL file
+│   └── benchmark.py            # Performance benchmarking tool
 ├── tests/
-│   ├── test_split_files.py     # pytest suite (14 tests)
-│   └── test_snowflake_connector.py  # pytest suite (5 tests)
-├── .github/workflows/ci.yml    # GitHub Actions CI (lint + mypy + pytest-cov)
-├── .env.example                # Template for environment variables
+│   ├── conftest.py             # Shared fixtures
+│   ├── test_split_files.py     # Core split_file tests + parametrize
+│   ├── test_snowflake_connector.py  # Connector env-var tests
+│   ├── test_snowflake_helpers.py    # execute_query / health_check tests
+│   ├── test_snowflake_connector_extended.py
+│   ├── test_data_quality.py    # JSON output correctness
+│   ├── test_integration.py     # End-to-end CLI tests
+│   ├── test_edge_cases.py      # Extreme boundary tests
+│   ├── test_validators.py      # Validator unit tests
+│   ├── test_validators_extended.py
+│   ├── test_logger.py          # Logger configuration tests
+│   ├── test_metrics.py         # Metrics and Timer tests
+│   └── test_scripts.py         # validate_jsonl CLI tests
+├── .github/workflows/ci.yml    # GitHub Actions CI matrix
+├── .env.example                # Env var template with full comments
+├── Makefile                    # install / test / lint / clean targets
+├── .pre-commit-config.yaml     # ruff + mypy pre-commit hooks
+├── CONTRIBUTING.md             # Development guide
+├── CHANGELOG.md                # Release history
 ├── requirements.txt            # Python dependencies
-├── pyproject.toml              # Build + tool configuration
-└── README.md
+└── pyproject.toml              # Build + ruff + pytest + mypy config
 ```
 
 ---
