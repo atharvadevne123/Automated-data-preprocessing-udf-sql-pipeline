@@ -16,7 +16,6 @@ from utils.validators import (
     validate_output_prefix,
 )
 
-
 # ---------- validate_input_path ----------
 
 
