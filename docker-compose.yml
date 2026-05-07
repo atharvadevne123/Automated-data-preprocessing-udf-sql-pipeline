@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  pipeline:
+    build: .
+    container_name: yelp-pipeline
+    environment:
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT}
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}
+      - SNOWFLAKE_WAREHOUSE=${SNOWFLAKE_WAREHOUSE}
+      - SNOWFLAKE_DATABASE=${SNOWFLAKE_DATABASE}
+      - SNOWFLAKE_SCHEMA=${SNOWFLAKE_SCHEMA:-PUBLIC}
+      - SNOWFLAKE_ROLE=${SNOWFLAKE_ROLE:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+    command: >
+      python split_files.py
+        /app/data/yelp_academic_dataset_review.json
+        --num-files 10
+        --output-dir /app/output
+
+  test:
+    build: .
+    container_name: yelp-pipeline-test
+    environment:
+      - LOG_LEVEL=WARNING
+    command: >
+      pytest tests/ -v --tb=short --cov=. --cov-report=term-missing
+    profiles:
+      - test
