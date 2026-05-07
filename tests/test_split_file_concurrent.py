@@ -39,8 +39,10 @@ def test_split_thread_safe_separate_files(tmp_path: Path) -> None:
 
     t1 = threading.Thread(target=run_split, args=("a", file_a, str(tmp_path / "a_out_"), 3))
     t2 = threading.Thread(target=run_split, args=("b", file_b, str(tmp_path / "b_out_"), 5))
-    t1.start(); t2.start()
-    t1.join(); t2.join()
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
 
     assert not errors, f"Thread errors: {errors}"
     assert sum(_line_count(o) for o in results["a"]) == 30
@@ -65,7 +67,8 @@ def test_split_idempotent_output(tmp_path: Path, n: int) -> None:
 
     out1 = tmp_path / "out1"
     out2 = tmp_path / "out2"
-    out1.mkdir(); out2.mkdir()
+    out1.mkdir()
+    out2.mkdir()
 
     outputs1 = split_file(f, str(out1 / "c_"), 5)
     outputs2 = split_file(f, str(out2 / "c_"), 5)

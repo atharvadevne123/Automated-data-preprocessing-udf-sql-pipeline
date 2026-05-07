@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 import pytest
 
 from utils.metrics import SplitMetrics, Timer
@@ -53,7 +50,6 @@ def test_timer_elapsed_increases() -> None:
     import time
 
     with Timer() as t:
-        start = t._start
         time.sleep(0.02)
     assert t.elapsed >= 0.015
 
@@ -62,7 +58,6 @@ def test_timer_multiple_uses() -> None:
     t = Timer()
     with t:
         pass
-    first = t.elapsed
     with t:
         pass
     second = t.elapsed

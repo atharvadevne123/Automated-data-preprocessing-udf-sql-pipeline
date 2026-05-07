@@ -68,7 +68,7 @@ def test_validate_jsonl_max_errors_flag(tmp_path: Path) -> None:
             fh.write("NOT JSON\n")
     result = run_validate([str(f), "--max-errors", "3"])
     assert result.returncode == 1
-    error_lines = [l for l in result.stderr.splitlines() if "Line" in l]
+    error_lines = [ln for ln in result.stderr.splitlines() if "Line" in ln]
     assert len(error_lines) <= 3
 
 

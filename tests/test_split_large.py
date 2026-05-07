@@ -18,7 +18,7 @@ def _read_all(paths: list[str]) -> list[dict]:
     records = []
     for p in paths:
         with open(p, encoding="utf-8") as f:
-            records.extend(json.loads(l) for l in f if l.strip())
+            records.extend(json.loads(line) for line in f if line.strip())
     return records
 
 

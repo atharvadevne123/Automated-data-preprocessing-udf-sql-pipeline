@@ -8,7 +8,6 @@ import pytest
 
 from utils.metrics import SplitMetrics, Timer
 
-
 # ---------- SplitMetrics ----------
 
 
