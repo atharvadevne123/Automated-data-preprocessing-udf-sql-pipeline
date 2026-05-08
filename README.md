@@ -397,6 +397,75 @@ Download from the official [Yelp Open Dataset](https://business.yelp.com/data/re
 
 ---
 
+## Pipeline Package
+
+The `pipeline/` package provides composable stages for Yelp record processing:
+
+```python
+from pipeline.processor import RecordProcessor
+from pipeline.cleaner import TextCleaner
+from pipeline.sentiment import SentimentAnalyzer
+from pipeline.aggregator import StatsAggregator
+from pipeline.exporter import DataExporter
+from pathlib import Path
+
+# Filter high-rated reviews, clean text, enrich with sentiment
+proc = RecordProcessor(filters=[lambda r: r.get("stars", 0) >= 4])
+cleaner = TextCleaner(lowercase=True, strip_urls=True, strip_html=True)
+analyzer = SentimentAnalyzer()
+agg = StatsAggregator()
+exporter = DataExporter()
+
+records = list(proc.process_file(Path("reviews.jsonl")))
+for r in records:
+    cleaner.clean_record(r)
+    analyzer.enrich_record(r)
+    agg.add(r)
+
+exporter.to_jsonl(records, Path("output/enriched.jsonl"))
+print(agg.global_stats().to_dict())
+```
+
+See [docs/pipeline.md](docs/pipeline.md) for full API reference.
+
+---
+
+## Models Package
+
+Pydantic models for Yelp record types:
+
+```python
+from models.yelp import YelpReview, YelpBusiness, YelpUser
+
+review = YelpReview(review_id="r1", user_id="u1", business_id="b1", stars=4.5)
+print(review.is_positive())   # True
+print(review.total_votes())   # 0
+```
+
+See [docs/models.md](docs/models.md) for full API reference.
+
+---
+
+## CLI Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `split_files.py` | Split large JSONL into N chunks |
+| `scripts/validate_jsonl.py` | Validate JSONL for parse errors |
+| `scripts/analyze_sentiment.py` | Enrich JSONL with sentiment scores |
+| `scripts/generate_report.py` | Generate JSON summary report |
+| `scripts/benchmark.py` | Performance benchmark |
+
+```bash
+# Analyze sentiment on a processed JSONL
+python scripts/analyze_sentiment.py reviews.jsonl output/enriched.jsonl
+
+# Generate a processing report
+python scripts/generate_report.py output/enriched.jsonl --output report.json --top-n 20
+```
+
+---
+
 ## Author
 
 **Atharva Devne** · [GitHub](https://github.com/atharvadevne123)
