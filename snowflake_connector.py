@@ -169,3 +169,75 @@ def get_connection_iterator(conn: Any, sql: str, params: Sequence[Any] | None = 
         raise
     finally:
         cursor.close()
+
+
+def execute_many(conn: Any, sql: str, data: Sequence[Sequence[Any]]) -> int:
+    """Execute *sql* with multiple rows of bind parameters (bulk insert).
+
+    Args:
+        conn: Open Snowflake connection.
+        sql: Parameterised SQL INSERT/UPDATE statement.
+        data: Sequence of row tuples or lists to bind.
+
+    Returns:
+        Number of rows affected.
+
+    Raises:
+        Exception: on execution failure.
+    """
+    cursor = conn.cursor()
+    try:
+        cursor.executemany(sql, data)
+        affected = cursor.rowcount if cursor.rowcount is not None else len(data)
+        logger.info("execute_many: %d row(s) affected via %s", affected, sql[:80])
+        return affected
+    except Exception as e:
+        logger.error("execute_many failed: %s | error: %s", sql[:200], e)
+        raise
+    finally:
+        cursor.close()
+
+
+def table_exists(conn: Any, table_name: str, schema: str | None = None) -> bool:
+    """Return True if *table_name* exists in the current database/schema.
+
+    Args:
+        conn: Open Snowflake connection.
+        table_name: Name of the table to check (case-insensitive).
+        schema: Optional schema name; uses the connection default if None.
+
+    Returns:
+        True if the table exists, False otherwise.
+    """
+    table_upper = table_name.upper()
+    try:
+        if schema:
+            rows = execute_query(
+                conn,
+                "SELECT 1 FROM information_schema.tables WHERE table_name = %s AND table_schema = %s",
+                (table_upper, schema.upper()),
+            )
+        else:
+            rows = execute_query(
+                conn,
+                "SELECT 1 FROM information_schema.tables WHERE table_name = %s",
+                (table_upper,),
+            )
+        return len(rows) > 0
+    except Exception as e:
+        logger.error("table_exists check failed for %s: %s", table_name, e)
+        return False
+
+
+def get_table_row_count(conn: Any, table_name: str) -> int:
+    """Return the number of rows in *table_name*.
+
+    Args:
+        conn: Open Snowflake connection.
+        table_name: Table to count rows in.
+
+    Returns:
+        Row count as an integer.
+    """
+    rows = execute_query(conn, f"SELECT COUNT(*) FROM {table_name}")  # noqa: S608
+    return int(rows[0][0]) if rows else 0
