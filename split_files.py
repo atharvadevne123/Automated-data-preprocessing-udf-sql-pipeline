@@ -11,7 +11,7 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 
 def get_file_size_mb(filepath: Path) -> float:
@@ -133,6 +133,78 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
 
     logger.info("Done — split into %d file(s).", len(output_files))
     return output_files
+
+
+def split_file_stream(input_file: Path, num_files: int) -> list[list[str]]:
+    """Split *input_file* into *num_files* in-memory chunk lists.
+
+    Unlike :func:`split_file`, this function does not write to disk — it
+    returns the lines grouped into chunks.  Useful for testing or when the
+    caller controls output serialisation.
+
+    Args:
+        input_file: Path to the source JSONL file.
+        num_files: Desired number of output chunks (>= 1).
+
+    Returns:
+        List of *num_files* lists, each containing the raw line strings for
+        that chunk.  Lines include the trailing newline character.
+
+    Raises:
+        FileNotFoundError: if *input_file* does not exist.
+        ValueError: if *num_files* < 1 or the file is empty.
+    """
+    if not input_file.exists():
+        raise FileNotFoundError(f"Input file not found: {input_file}")
+    if num_files < 1:
+        raise ValueError(f"num_files must be >= 1, got {num_files}")
+
+    with open(input_file, encoding="utf-8") as f:
+        all_lines = f.readlines()
+
+    total = len(all_lines)
+    if total == 0:
+        raise ValueError(f"Input file is empty: {input_file}")
+
+    if num_files > total:
+        num_files = total
+
+    lines_per_chunk = total // num_files
+    remainder = total % num_files
+
+    chunks: list[list[str]] = []
+    start = 0
+    for i in range(num_files):
+        end = start + lines_per_chunk + (remainder if i == num_files - 1 else 0)
+        chunks.append(all_lines[start:end])
+        start = end
+    return chunks
+
+
+def estimate_chunks_for_size(input_file: Path, target_size_mb: float) -> int:
+    """Estimate how many chunks to split *input_file* into to reach *target_size_mb* per chunk.
+
+    Args:
+        input_file: Path to the source file.
+        target_size_mb: Desired maximum size per output chunk in MB.
+
+    Returns:
+        Recommended number of chunks (at least 1).
+
+    Raises:
+        FileNotFoundError: if *input_file* does not exist.
+        ValueError: if *target_size_mb* <= 0.
+    """
+    if not input_file.exists():
+        raise FileNotFoundError(f"Input file not found: {input_file}")
+    if target_size_mb <= 0:
+        raise ValueError(f"target_size_mb must be > 0, got {target_size_mb}")
+
+    file_size_mb = get_file_size_mb(input_file)
+    if file_size_mb == 0.0:
+        return 1
+    chunks = max(1, int(file_size_mb / target_size_mb) + (1 if file_size_mb % target_size_mb else 0))
+    return chunks
 
 
 def main() -> None:
