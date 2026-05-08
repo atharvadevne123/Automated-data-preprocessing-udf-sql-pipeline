@@ -55,3 +55,39 @@ def configure_root_logger(level: str = "INFO") -> None:
             )
         )
         root.addHandler(handler)
+
+
+def get_json_logger(name: str, level: str = "INFO") -> logging.Logger:
+    """Return a logger that emits newline-delimited JSON log records.
+
+    Each log record is written as a single JSON object with keys:
+    ``timestamp``, ``level``, ``logger``, and ``message``.
+
+    Args:
+        name: Logger name, typically ``__name__``.
+        level: Log level string (default ``"INFO"``).
+
+    Returns:
+        Configured :class:`logging.Logger`.
+    """
+    import json as _json
+
+    class _JsonFormatter(logging.Formatter):
+        def format(self, record: logging.LogRecord) -> str:
+            payload = {
+                "timestamp": self.formatTime(record, datefmt="%Y-%m-%dT%H:%M:%S"),
+                "level": record.levelname,
+                "logger": record.name,
+                "message": record.getMessage(),
+            }
+            if record.exc_info:
+                payload["exception"] = self.formatException(record.exc_info)
+            return _json.dumps(payload)
+
+    log = logging.getLogger(name)
+    if not log.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(_JsonFormatter())
+        log.addHandler(handler)
+    log.setLevel(getattr(logging, level.upper(), logging.INFO))
+    return log
