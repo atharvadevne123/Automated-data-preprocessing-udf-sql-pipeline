@@ -26,13 +26,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov ruff mypy
+          pip install pytest pytest-cov ruff mypy textblob pydantic
 
       - name: Lint with ruff
         run: ruff check . --select E,F,W,I --ignore E501
 
       - name: Type-check with mypy
-        run: mypy split_files.py snowflake_connector.py utils/ --ignore-missing-imports --no-error-summary
+        run: mypy split_files.py snowflake_connector.py utils/ pipeline/ models/ --ignore-missing-imports --no-error-summary
         continue-on-error: true
 
       - name: Run tests with coverage
@@ -50,3 +50,11 @@ jobs:
           name: coverage-report
           path: coverage.xml
           retention-days: 14
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: htmlcov
+          path: htmlcov/
+          retention-days: 7
