@@ -93,7 +93,7 @@ class TestJsonArrayEdgeCases:
 
 class TestExportDispatchEdgeCases:
     @pytest.mark.parametrize("fmt_variant", ["JSONL", "Jsonl", "JSON", "CSV"])
-    def test_case_insensitive_format(self, exporter, records):
+    def test_case_insensitive_format(self, exporter, records, fmt_variant):
         with tempfile.TemporaryDirectory() as d:
             fmt = fmt_variant.lower()
             path = Path(d) / f"out.{fmt}"
