@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-05-08
+
+### Added
+- `pipeline/` package: `RecordProcessor`, `TextCleaner`, `SentimentAnalyzer`, `StatsAggregator`, `DataExporter`
+- `models/` package: `YelpReview`, `YelpBusiness`, `YelpUser` Pydantic models
+- `utils/retry.py` — exponential-backoff retry decorator with `MaxRetriesExceeded`
+- `utils/cache.py` — LRU cache wrapper (`LRUCache`, `CacheStats`, `@cached`) with hit/miss stats
+- `utils/logger.py` — `get_json_logger()` for structured JSON log output
+- `utils/validators.py` — `validate_star_rating()`, `validate_email()`, `sanitize_text()`, `validate_yelp_review_record()`
+- `utils/metrics.py` — `ValidationMetrics`, `PipelineRunMetrics` dataclasses
+- `utils/__init__.py` — `__all__` exports for the full utils public API
+- `split_files.py` — `split_file_stream()` in-memory chunking and `estimate_chunks_for_size()` helper
+- `snowflake_connector.py` — `execute_many()`, `table_exists()`, `get_table_row_count()` helpers
+- `scripts/analyze_sentiment.py` — CLI for batch JSONL sentiment enrichment
+- `scripts/generate_report.py` — CLI for JSON summary report generation
+- `ARCHITECTURE.md` — system design document with component diagram
+- `docs/pipeline.md` — pipeline module API reference
+- `docs/models.md` — Pydantic model API reference
+- 200+ new tests across 12 test modules
+- Makefile targets: `install-dev`, `analyze-sentiment`, `generate-report`, `pipeline-demo`
+- `pyproject.toml`: `[project.scripts]`, `[tool.ruff.format]`, extended classifiers
+
+### Changed
+- `pyproject.toml` version bumped to `1.2.0`
+- `split_files.py` version bumped to `1.2.0`
+- CI workflow: added `textblob` and `pydantic` to install step, extended mypy scope
+
 ## [Unreleased]
 
 ### Added
