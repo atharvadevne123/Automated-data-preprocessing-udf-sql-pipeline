@@ -1,0 +1,159 @@
+"""Statistics aggregator for Yelp pipeline records."""
+
+from __future__ import annotations
+
+import logging
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class BusinessStats:
+    """Accumulated statistics for a single business.
+
+    Attributes:
+        business_id: The business identifier.
+        review_count: Total reviews seen.
+        star_sum: Sum of all star ratings.
+        useful_sum: Sum of useful votes.
+        positive_count: Reviews with stars >= 4.
+        negative_count: Reviews with stars <= 2.
+    """
+
+    business_id: str
+    review_count: int = 0
+    star_sum: float = 0.0
+    useful_sum: int = 0
+    positive_count: int = 0
+    negative_count: int = 0
+
+    @property
+    def average_stars(self) -> float:
+        """Mean star rating; 0.0 if no reviews."""
+        return self.star_sum / self.review_count if self.review_count > 0 else 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable summary dict."""
+        return {
+            "business_id": self.business_id,
+            "review_count": self.review_count,
+            "average_stars": round(self.average_stars, 3),
+            "useful_sum": self.useful_sum,
+            "positive_count": self.positive_count,
+            "negative_count": self.negative_count,
+        }
+
+
+@dataclass
+class GlobalStats:
+    """Pipeline-wide aggregated statistics.
+
+    Attributes:
+        total_records: Total records processed.
+        star_distribution: Count of records per integer star rating (1-5).
+        sentiment_counts: Count per sentiment label.
+    """
+
+    total_records: int = 0
+    star_distribution: dict[int, int] = field(default_factory=lambda: defaultdict(int))
+    sentiment_counts: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable summary dict."""
+        return {
+            "total_records": self.total_records,
+            "star_distribution": dict(self.star_distribution),
+            "sentiment_counts": dict(self.sentiment_counts),
+        }
+
+
+class StatsAggregator:
+    """Accumulate per-business and global statistics from processed records.
+
+    Example::
+
+        agg = StatsAggregator()
+        for record in records:
+            agg.add(record)
+        summary = agg.global_stats().to_dict()
+    """
+
+    def __init__(self) -> None:
+        self._businesses: dict[str, BusinessStats] = {}
+        self._global = GlobalStats()
+
+    def add(self, record: dict[str, Any]) -> None:
+        """Ingest a single record and update all accumulators.
+
+        Args:
+            record: Dict that may contain ``business_id``, ``stars``,
+                ``useful``, and ``sentiment_label`` keys.
+        """
+        self._global.total_records += 1
+
+        stars = float(record.get("stars", 0))
+        star_key = max(1, min(5, int(round(stars))))
+        self._global.star_distribution[star_key] += 1
+
+        label = record.get("sentiment_label", "unknown")
+        self._global.sentiment_counts[label] += 1
+
+        bid = record.get("business_id", "")
+        if bid:
+            if bid not in self._businesses:
+                self._businesses[bid] = BusinessStats(business_id=bid)
+            bstats = self._businesses[bid]
+            bstats.review_count += 1
+            bstats.star_sum += stars
+            bstats.useful_sum += int(record.get("useful", 0))
+            if stars >= 4.0:
+                bstats.positive_count += 1
+            elif stars <= 2.0:
+                bstats.negative_count += 1
+
+    def add_batch(self, records: list[dict[str, Any]]) -> None:
+        """Ingest a list of records.
+
+        Args:
+            records: List of record dicts.
+        """
+        for record in records:
+            self.add(record)
+
+    def global_stats(self) -> GlobalStats:
+        """Return accumulated global statistics."""
+        return self._global
+
+    def business_stats(self, business_id: str) -> BusinessStats | None:
+        """Return stats for a specific business, or None if not seen.
+
+        Args:
+            business_id: Business identifier to look up.
+        """
+        return self._businesses.get(business_id)
+
+    def top_businesses(self, n: int = 10) -> list[BusinessStats]:
+        """Return the top-N businesses by average star rating (min 5 reviews).
+
+        Args:
+            n: Maximum number of businesses to return.
+
+        Returns:
+            Sorted list of BusinessStats, highest average stars first.
+        """
+        eligible = [b for b in self._businesses.values() if b.review_count >= 5]
+        eligible.sort(key=lambda b: b.average_stars, reverse=True)
+        return eligible[:n]
+
+    def all_business_stats(self) -> list[dict[str, Any]]:
+        """Return all business stats as a list of dicts."""
+        return [b.to_dict() for b in self._businesses.values()]
+
+    def reset(self) -> None:
+        """Clear all accumulated state."""
+        self._businesses.clear()
+        self._global = GlobalStats()
+        logger.info("StatsAggregator reset.")
