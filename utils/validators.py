@@ -117,3 +117,88 @@ def coerce_record(record: Any, required_fields: list[str]) -> dict[str, Any]:
     if missing:
         raise ValidationError(f"Record missing required fields: {missing}")
     return record
+
+
+def validate_star_rating(stars: Any) -> float:
+    """Validate that *stars* is a numeric value in the range [1.0, 5.0].
+
+    Args:
+        stars: Star rating value (int or float).
+
+    Returns:
+        *stars* cast to float.
+
+    Raises:
+        ValidationError: if *stars* is non-numeric or outside [1.0, 5.0].
+    """
+    try:
+        value = float(stars)
+    except (TypeError, ValueError):
+        raise ValidationError(f"Star rating must be numeric, got: {stars!r}")
+    if not (1.0 <= value <= 5.0):
+        raise ValidationError(f"Star rating must be in [1.0, 5.0], got {value}")
+    return value
+
+
+def validate_email(email: str) -> str:
+    """Validate that *email* looks like a valid email address.
+
+    Performs a simple structural check (user@domain.tld) without DNS lookup.
+
+    Args:
+        email: Email address string to validate.
+
+    Returns:
+        *email* stripped of surrounding whitespace.
+
+    Raises:
+        ValidationError: if *email* does not match the expected pattern.
+    """
+    import re
+    _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    cleaned = (email or "").strip()
+    if not cleaned or not _EMAIL_RE.match(cleaned):
+        raise ValidationError(f"Invalid email address: {email!r}")
+    return cleaned
+
+
+def sanitize_text(text: str, max_length: int = 10_000) -> str:
+    """Strip and truncate *text* to at most *max_length* characters.
+
+    Also removes ASCII null bytes (``\\x00``) which can cause issues in SQL
+    INSERT statements.
+
+    Args:
+        text: Input text to sanitise.
+        max_length: Maximum allowed character length (default 10 000).
+
+    Returns:
+        Sanitised string.
+
+    Raises:
+        ValidationError: if *text* is not a string.
+    """
+    if not isinstance(text, str):
+        raise ValidationError(f"Expected str for text, got {type(text).__name__}")
+    cleaned = text.replace("\x00", "").strip()
+    return cleaned[:max_length]
+
+
+def validate_yelp_review_record(record: dict[str, Any]) -> dict[str, Any]:
+    """Validate the required fields of a Yelp review record dict.
+
+    Checks that ``review_id``, ``user_id``, ``business_id``, and ``stars``
+    are present and that ``stars`` is valid.
+
+    Args:
+        record: Parsed JSON review record.
+
+    Returns:
+        The validated record unchanged.
+
+    Raises:
+        ValidationError: if any required field is missing or invalid.
+    """
+    coerce_record(record, ["review_id", "user_id", "business_id", "stars"])
+    validate_star_rating(record["stars"])
+    return record
