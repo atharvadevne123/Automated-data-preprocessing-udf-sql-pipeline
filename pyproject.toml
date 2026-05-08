@@ -4,12 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "automated-data-preprocessing-udf-sql-pipeline"
-version = "1.0.0"
+version = "1.2.0"
 description = "Automated data preprocessing pipeline with UDF SQL functions"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [{name = "atharvadevne123", email = "devneatharva@gmail.com"}]
+keywords = ["yelp", "nlp", "pipeline", "snowflake", "data-engineering"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -18,36 +27,66 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.5",
 ]
+nlp = ["textblob>=0.17.0"]
+snowflake = ["snowflake-connector-python>=3.0"]
+
+[project.scripts]
+split-jsonl = "split_files:main"
+validate-jsonl = "scripts.validate_jsonl:main"
+analyze-sentiment = "scripts.analyze_sentiment:main"
+generate-report = "scripts.generate_report:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["utils*", "pipeline*", "models*", "scripts*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--tb=short"
+addopts = "--tb=short -q"
+filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true
 no_error_summary = true
 show_error_codes = true
+warn_unused_ignores = false
 
 [tool.coverage.run]
 source = ["."]
-omit = ["tests/*", "setup.py", "scripts/benchmark.py"]
+omit = [
+    "tests/*",
+    "setup.py",
+    "scripts/benchmark.py",
+    ".git/*",
+    "venv/*",
+    ".venv/*",
+]
 
 [tool.coverage.report]
 fail_under = 75
 show_missing = true
 skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+[tool.coverage.paths]
+source = ["."]
 
 [tool.ruff]
 line-length = 120
 target-version = "py39"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
-ignore = ["E501"]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501", "B904", "UP007"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["utils", "scripts"]
+known-first-party = ["utils", "scripts", "pipeline", "models"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
