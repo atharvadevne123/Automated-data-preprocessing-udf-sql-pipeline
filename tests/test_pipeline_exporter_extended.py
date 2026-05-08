@@ -27,7 +27,7 @@ class TestJsonlRoundTrip:
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "rt.jsonl"
             exporter.to_jsonl(records, path)
-            loaded = [json.loads(l) for l in path.read_text().splitlines()]
+            loaded = [json.loads(line) for line in path.read_text().splitlines()]
             assert loaded == records
 
     def test_unicode_preserved(self, exporter):

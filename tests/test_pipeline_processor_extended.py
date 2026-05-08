@@ -47,7 +47,6 @@ class TestComplexFilterChains:
 
 class TestTransformChains:
     def test_add_metadata_transform(self):
-        import datetime
         p = RecordProcessor(transforms=[
             lambda r: {**r, "processed_at": "2026-01-01"},
             lambda r: {**r, "word_count": len(r.get("text", "").split())},

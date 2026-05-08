@@ -84,26 +84,12 @@ class TestRetryDecorator:
                 pass
 
     def test_backoff_increases_delay(self):
-        delays = []
-        import time
-        original_sleep = time.sleep
-
-        def capture_sleep(s):
-            delays.append(s)
-
-        import utils.retry as retry_mod
-        import time as t_mod
-
-        original = t_mod.sleep
-
         @retry(exceptions=(OSError,), max_attempts=3, delay=0.001, backoff=10.0)
         def fails():
             raise OSError("fail")
 
-        try:
+        with pytest.raises(MaxRetriesExceeded):
             fails()
-        except MaxRetriesExceeded:
-            pass
 
     @pytest.mark.parametrize("attempts", [1, 2, 3, 5])
     def test_exact_attempt_count(self, attempts):

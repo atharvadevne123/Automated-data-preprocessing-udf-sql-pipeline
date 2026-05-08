@@ -38,7 +38,7 @@ class TestToJsonl:
             path = Path(d) / "out.jsonl"
             exporter.to_jsonl(sample_records, path)
             lines = path.read_text().strip().splitlines()
-            parsed = [json.loads(l) for l in lines]
+            parsed = [json.loads(line) for line in lines]
             assert len(parsed) == 3
 
     def test_creates_parent_directory(self, exporter, sample_records):

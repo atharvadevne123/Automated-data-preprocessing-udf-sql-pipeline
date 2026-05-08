@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from pydantic import BaseModel, Field, field_validator
+    from pydantic import BaseModel, Field  # noqa: F401
     _PYDANTIC_V2 = True
 except ImportError:
-    from pydantic import BaseModel, Field, validator as field_validator  # type: ignore[no-redef]
+    from pydantic import BaseModel, Field  # type: ignore[no-redef]
     _PYDANTIC_V2 = False
 
 
