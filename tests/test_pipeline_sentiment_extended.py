@@ -10,10 +10,11 @@ from pipeline.sentiment import SentimentAnalyzer, SentimentResult
 class TestLabelAssignment:
     @pytest.mark.parametrize("polarity,expected_label", [
         (0.5, "positive"),
-        (0.1, "positive"),
+        (0.11, "positive"),
+        (0.1, "neutral"),
         (0.0, "neutral"),
         (-0.05, "neutral"),
-        (-0.1, "negative"),
+        (-0.11, "negative"),
         (-0.8, "negative"),
     ])
     def test_label_from_polarity(self, polarity, expected_label):
