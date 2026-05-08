@@ -71,3 +71,86 @@ class Timer:
 
     def __exit__(self, *_: Any) -> None:
         self.elapsed = time.perf_counter() - self._start
+
+
+@dataclass
+class ValidationMetrics:
+    """Tracks outcomes of a batch validation pass.
+
+    Attributes:
+        total: Total records examined.
+        valid: Records that passed all validations.
+        invalid: Records that failed at least one validation.
+        skipped: Records skipped (e.g. empty lines, non-JSON).
+    """
+
+    total: int = 0
+    valid: int = 0
+    invalid: int = 0
+    skipped: int = 0
+
+    @property
+    def error_rate(self) -> float:
+        """Fraction of examined records that were invalid."""
+        return self.invalid / self.total if self.total > 0 else 0.0
+
+    @property
+    def valid_rate(self) -> float:
+        """Fraction of examined records that were valid."""
+        return self.valid / self.total if self.total > 0 else 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable dict."""
+        return {
+            "total": self.total,
+            "valid": self.valid,
+            "invalid": self.invalid,
+            "skipped": self.skipped,
+            "error_rate": round(self.error_rate, 4),
+            "valid_rate": round(self.valid_rate, 4),
+        }
+
+
+@dataclass
+class PipelineRunMetrics:
+    """End-to-end metrics for a single pipeline run.
+
+    Attributes:
+        pipeline_name: Human-readable name for this run.
+        input_records: Records read from source.
+        output_records: Records written to sink.
+        elapsed_sec: Wall-clock seconds for the run.
+        validation: Nested ValidationMetrics instance.
+        split_metrics: Optional SplitMetrics for file-split operations.
+    """
+
+    pipeline_name: str
+    input_records: int = 0
+    output_records: int = 0
+    elapsed_sec: float = 0.0
+    validation: ValidationMetrics = field(default_factory=ValidationMetrics)
+    split_metrics: SplitMetrics | None = None
+
+    @property
+    def throughput(self) -> float:
+        """Records processed per second."""
+        return self.output_records / self.elapsed_sec if self.elapsed_sec > 0 else 0.0
+
+    @property
+    def drop_rate(self) -> float:
+        """Fraction of input records that were not written to output."""
+        if self.input_records == 0:
+            return 0.0
+        return max(0.0, (self.input_records - self.output_records) / self.input_records)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable dict of all run metrics."""
+        return {
+            "pipeline_name": self.pipeline_name,
+            "input_records": self.input_records,
+            "output_records": self.output_records,
+            "elapsed_sec": round(self.elapsed_sec, 4),
+            "throughput_records_per_sec": round(self.throughput, 1),
+            "drop_rate": round(self.drop_rate, 4),
+            "validation": self.validation.to_dict(),
+        }
