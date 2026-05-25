@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-05-25
+
+### Added
+- `pipeline/transformer.py` — `FieldRenamer`, `TypeCoercer`, `ComputedFieldAdder` for record transformation
+- `pipeline/joiner.py` — `RecordJoiner` for left-join operations on JSONL records
+- `pipeline/aggregator.py` — `BusinessStats.merge()` and `StatsAggregator.merge()` for parallel aggregation
+- `pipeline/sentiment.py` — `analyze_stream()` lazy generator for memory-efficient streaming
+- `pipeline/cleaner.py` — `TextCleaner.normalize_whitespace()` static method; `CleanerStats` dataclass; `strip_punctuation` flag
+- `pipeline/processor.py` — `process_files_parallel()` for concurrent multi-file processing
+- `pipeline/__init__.py` — exports for `CleanerStats`, `RecordJoiner`, `FieldRenamer`, `TypeCoercer`, `ComputedFieldAdder`
+- `utils/profiler.py` — `FunctionProfiler`, `timed()` context manager, `profile_memory()` helper
+- `utils/metrics.py` — `MemoryMetrics` dataclass with `tracemalloc` integration
+- `utils/retry.py` — `RetryConfig` dataclass with configurable backoff and jitter
+- `utils/cache.py` — `DictCache` with TTL expiry and maxsize eviction
+- `utils/validators.py` — `validate_date_format()`, `validate_business_id_format()`, `validate_coordinates()`, `validate_text_length()`
+- `utils/__init__.py` — updated exports for all new utilities
+- `snowflake_connector.py` — `batch_execute()` chunked INSERT helper
+- `split_files.py` — `--dry-run` preview flag; `_write_chunk()` extracted helper; `_PROGRESS_INTERVAL` module constant
+- `scripts/run_pipeline.py` — end-to-end pipeline orchestration CLI
+- `scripts/analyze_sentiment.py` — `--output-format` flag (jsonl/json)
+- `scripts/generate_report.py` — `--format markdown` output option
+- `scripts/validate_jsonl.py` — `--required-fields` schema validation flag
+- `scripts/benchmark.py` — `--output-json` flag for persisting metrics
+- `models/yelp.py` — `YelpCheckin`, `YelpPhoto` models; `YelpBusiness` latitude/longitude fields; helper methods on all models
+- `models/__init__.py` — exports for `YelpCheckin`, `YelpPhoto`
+- `.github/workflows/ci.yml` — `bandit` security scan and `ruff format --check` steps
+- `pyproject.toml` — `[tool.bandit]` configuration; `run-pipeline` entry point
+- 300+ new tests across 20+ test modules
+
+### Changed
+- `pipeline/aggregator.py` — extracted `_update_business()` private method
+- `pipeline/processor.py` — extracted `_parse_line()` static method
+- `pipeline/exporter.py` — added OSError handling with logging in all write methods
+
+### Fixed
+- `pipeline/cleaner.py` — removed unused `field` import that shadowed parameter name
+
 ## [1.2.0] — 2026-05-08
 
 ### Added
