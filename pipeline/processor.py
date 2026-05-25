@@ -122,3 +122,30 @@ class RecordProcessor:
     def process_file_to_list(self, path: Path) -> list[dict[str, Any]]:
         """Convenience wrapper that materialises process_file() into a list."""
         return list(self.process_file(path))
+
+    def process_files_parallel(
+        self,
+        paths: list[Path],
+        max_workers: int = 4,
+    ) -> list[dict[str, Any]]:
+        """Process multiple JSONL files concurrently and return merged results.
+
+        Args:
+            paths: List of file paths to process.
+            max_workers: Maximum number of threads (default 4).
+
+        Returns:
+            Flat list of all processed records from all files.
+        """
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        results: list[dict[str, Any]] = []
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {executor.submit(self.process_file_to_list, p): p for p in paths}
+            for future in as_completed(futures):
+                path = futures[future]
+                try:
+                    results.extend(future.result())
+                except Exception as exc:
+                    logger.error("Failed to process %s: %s", path, exc)
+        return results
