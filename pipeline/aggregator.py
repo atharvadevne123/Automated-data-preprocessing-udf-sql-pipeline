@@ -35,6 +35,18 @@ class BusinessStats:
         """Mean star rating; 0.0 if no reviews."""
         return self.star_sum / self.review_count if self.review_count > 0 else 0.0
 
+    def merge(self, other: BusinessStats) -> None:
+        """Merge *other* into this instance in-place.
+
+        Args:
+            other: Another BusinessStats for the same business_id.
+        """
+        self.review_count += other.review_count
+        self.star_sum += other.star_sum
+        self.useful_sum += other.useful_sum
+        self.positive_count += other.positive_count
+        self.negative_count += other.negative_count
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serialisable summary dict."""
         return {
@@ -214,6 +226,25 @@ class StatsAggregator:
         total = sum(star * count for star, count in dist.items())
         n = sum(dist.values())
         return total / n if n > 0 else 0.0
+
+    def merge(self, other: StatsAggregator) -> None:
+        """Merge all statistics from *other* into this aggregator in-place.
+
+        Useful for combining results from parallel aggregation workers.
+
+        Args:
+            other: Another StatsAggregator whose data will be folded in.
+        """
+        self._global.total_records += other._global.total_records
+        for star, count in other._global.star_distribution.items():
+            self._global.star_distribution[star] += count
+        for label, count in other._global.sentiment_counts.items():
+            self._global.sentiment_counts[label] += count
+        for bid, bstats in other._businesses.items():
+            if bid in self._businesses:
+                self._businesses[bid].merge(bstats)
+            else:
+                self._businesses[bid] = bstats
 
     def reset(self) -> None:
         """Clear all accumulated state."""
