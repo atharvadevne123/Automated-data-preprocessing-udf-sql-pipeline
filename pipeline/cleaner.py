@@ -6,7 +6,7 @@ import logging
 import re
 import string
 import unicodedata
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -153,3 +153,20 @@ class TextCleaner:
             List of cleaned strings in the same order.
         """
         return [self.clean(t) for t in texts]
+
+    @staticmethod
+    def normalize_whitespace(text: str) -> str:
+        """Collapse all runs of whitespace (including tabs/newlines) to a single space.
+
+        Does not apply any other cleaning steps.  Strips leading and trailing
+        whitespace from the result.
+
+        Args:
+            text: Input string.
+
+        Returns:
+            String with normalised whitespace, or ``""`` for non-string input.
+        """
+        if not isinstance(text, str):
+            return ""
+        return _MULTI_SPACE_RE.sub(" ", text).strip()
