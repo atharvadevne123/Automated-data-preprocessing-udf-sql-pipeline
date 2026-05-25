@@ -152,6 +152,59 @@ class StatsAggregator:
         """Return all business stats as a list of dicts."""
         return [b.to_dict() for b in self._businesses.values()]
 
+    def filter_businesses(
+        self,
+        min_reviews: int = 0,
+        min_avg_stars: float = 0.0,
+        max_avg_stars: float = 5.0,
+    ) -> list[BusinessStats]:
+        """Return businesses matching the given criteria.
+
+        Args:
+            min_reviews: Minimum number of reviews required (inclusive).
+            min_avg_stars: Minimum average star rating (inclusive).
+            max_avg_stars: Maximum average star rating (inclusive).
+
+        Returns:
+            List of matching BusinessStats sorted by average stars descending.
+        """
+        result = [
+            b
+            for b in self._businesses.values()
+            if b.review_count >= min_reviews
+            and min_avg_stars <= b.average_stars <= max_avg_stars
+        ]
+        result.sort(key=lambda b: b.average_stars, reverse=True)
+        return result
+
+    def median_stars(self) -> float:
+        """Return the median star rating across all processed records.
+
+        Returns:
+            Median value, or 0.0 if no records have been added.
+        """
+        dist = self._global.star_distribution
+        if not dist:
+            return 0.0
+        stars_list: list[float] = []
+        for star, count in dist.items():
+            stars_list.extend([float(star)] * count)
+        stars_list.sort()
+        n = len(stars_list)
+        mid = n // 2
+        if n % 2 == 1:
+            return stars_list[mid]
+        return (stars_list[mid - 1] + stars_list[mid]) / 2.0
+
+    def mean_stars(self) -> float:
+        """Return the mean star rating across all processed records."""
+        dist = self._global.star_distribution
+        if not dist:
+            return 0.0
+        total = sum(star * count for star, count in dist.items())
+        n = sum(dist.values())
+        return total / n if n > 0 else 0.0
+
     def reset(self) -> None:
         """Clear all accumulated state."""
         self._businesses.clear()
