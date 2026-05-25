@@ -245,6 +245,35 @@ def validate_coordinates(latitude: float, longitude: float) -> tuple[float, floa
     return lat, lon
 
 
+def validate_text_length(text: str, min_length: int = 1, max_length: int = 10_000) -> str:
+    """Validate that *text* length is within [min_length, max_length].
+
+    Args:
+        text: Text string to validate.
+        min_length: Minimum allowed character count (inclusive, default 1).
+        max_length: Maximum allowed character count (inclusive, default 10 000).
+
+    Returns:
+        *text* unchanged.
+
+    Raises:
+        ValidationError: if *text* is not a string, shorter than *min_length*,
+            or longer than *max_length*.
+    """
+    if not isinstance(text, str):
+        raise ValidationError(f"Expected str, got {type(text).__name__}")
+    length = len(text)
+    if length < min_length:
+        raise ValidationError(
+            f"Text is too short: {length} < {min_length} characters"
+        )
+    if length > max_length:
+        raise ValidationError(
+            f"Text is too long: {length} > {max_length} characters"
+        )
+    return text
+
+
 def validate_yelp_review_record(record: dict[str, Any]) -> dict[str, Any]:
     """Validate the required fields of a Yelp review record dict.
 
