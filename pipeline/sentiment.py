@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterator
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +127,24 @@ class SentimentAnalyzer:
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             return list(executor.map(self.analyze, texts))
+
+    def analyze_stream(
+        self,
+        texts: Iterator[str],
+    ) -> Iterator[SentimentResult]:
+        """Analyse texts from an iterator lazily, one at a time.
+
+        Unlike :meth:`analyze_batch`, this does not materialise the full input
+        into memory — suitable for large streaming datasets.
+
+        Args:
+            texts: Iterator of input strings.
+
+        Yields:
+            SentimentResult for each text in order.
+        """
+        for text in texts:
+            yield self.analyze(text)
 
     def enrich_record(self, record: dict[str, Any], text_field: str = "text") -> dict[str, Any]:
         """Add sentiment fields to a record dict in-place and return it.
