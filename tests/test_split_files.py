@@ -252,3 +252,46 @@ def test_split_file_various_record_counts(tmp_path: Path, record_count: int) -> 
     num = min(5, record_count)
     outputs = split_file(filepath, prefix, num)
     assert sum(_line_count(o) for o in outputs) == record_count
+
+
+class TestDryRunFlag:
+    """Tests for the --dry-run CLI flag."""
+
+    def test_dry_run_no_files_written(self, sample_json_file, tmp_path):
+        from split_files import count_lines, main
+        import sys
+
+        output_prefix = str(tmp_path / "dry_")
+        with patch("sys.argv", ["split_files.py", str(sample_json_file),
+                                "--output-prefix", output_prefix, "--num-files", "5",
+                                "--dry-run"]):
+            main()
+        written = list(tmp_path.glob("dry_*.json"))
+        assert len(written) == 0
+
+    def test_dry_run_logs_correct_line_counts(self, sample_json_file, tmp_path, caplog):
+        import logging
+        from split_files import main
+
+        with patch("sys.argv", ["split_files.py", str(sample_json_file),
+                                "--num-files", "5", "--dry-run"]):
+            with caplog.at_level(logging.INFO):
+                main()
+        assert any("[DRY RUN]" in m for m in caplog.messages)
+
+    def test_dry_run_missing_file_exits(self, tmp_path):
+        from split_files import main
+
+        with patch("sys.argv", ["split_files.py", str(tmp_path / "ghost.json"),
+                                "--dry-run"]):
+            with pytest.raises(SystemExit):
+                main()
+
+    @pytest.mark.parametrize("num_chunks", [1, 5, 10])
+    def test_dry_run_parametrized_chunks(self, sample_json_file, tmp_path, num_chunks):
+        from split_files import main
+
+        with patch("sys.argv", ["split_files.py", str(sample_json_file),
+                                "--num-files", str(num_chunks), "--dry-run"]):
+            main()
+        assert len(list(tmp_path.glob("*.json"))) == 0
