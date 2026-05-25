@@ -8,6 +8,73 @@ from typing import Any
 
 
 @dataclass
+class MemoryMetrics:
+    """Tracks memory usage at a point in time using the tracemalloc stdlib module.
+
+    Attributes:
+        peak_bytes: Peak memory in bytes since last reset.
+        current_bytes: Current memory usage in bytes.
+        snapshot_label: Optional label for this measurement.
+
+    Example::
+
+        MemoryMetrics.start_tracing()
+        do_work()
+        m = MemoryMetrics.snapshot("after_load")
+        print(m.peak_mb)
+    """
+
+    peak_bytes: int = 0
+    current_bytes: int = 0
+    snapshot_label: str = ""
+
+    @staticmethod
+    def start_tracing() -> None:
+        """Start or reset tracemalloc tracing."""
+        import tracemalloc
+        if not tracemalloc.is_tracing():
+            tracemalloc.start()
+        else:
+            tracemalloc.reset_peak()
+
+    @classmethod
+    def snapshot(cls, label: str = "") -> "MemoryMetrics":
+        """Capture current and peak memory usage.
+
+        Args:
+            label: Optional human-readable label for this snapshot.
+
+        Returns:
+            MemoryMetrics with current and peak byte counts.
+        """
+        import tracemalloc
+        if not tracemalloc.is_tracing():
+            tracemalloc.start()
+        current, peak = tracemalloc.get_traced_memory()
+        return cls(peak_bytes=peak, current_bytes=current, snapshot_label=label)
+
+    @property
+    def peak_mb(self) -> float:
+        """Peak memory in megabytes."""
+        return self.peak_bytes / (1024 * 1024)
+
+    @property
+    def current_mb(self) -> float:
+        """Current memory in megabytes."""
+        return self.current_bytes / (1024 * 1024)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable dict."""
+        return {
+            "label": self.snapshot_label,
+            "current_bytes": self.current_bytes,
+            "current_mb": round(self.current_mb, 4),
+            "peak_bytes": self.peak_bytes,
+            "peak_mb": round(self.peak_mb, 4),
+        }
+
+
+@dataclass
 class SplitMetrics:
     """Tracks statistics for a file-split operation.
 
