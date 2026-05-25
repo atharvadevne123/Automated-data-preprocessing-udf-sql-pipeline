@@ -35,6 +35,11 @@ split-jsonl = "split_files:main"
 validate-jsonl = "scripts.validate_jsonl:main"
 analyze-sentiment = "scripts.analyze_sentiment:main"
 generate-report = "scripts.generate_report:main"
+run-pipeline = "scripts.run_pipeline:main"
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv"]
+skips = ["B101"]
 
 [tool.setuptools.packages.find]
 where = ["."]
