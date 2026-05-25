@@ -44,6 +44,25 @@ class RecordProcessor:
         self._sample_rate = sample_rate
         self._rng = random.Random(seed)
 
+    @staticmethod
+    def _parse_line(raw: str, lineno: int) -> dict[str, Any] | None:
+        """Parse a raw JSONL line and return a dict, or None if invalid.
+
+        Args:
+            raw: Stripped line text.
+            lineno: 1-based line number for logging.
+
+        Returns:
+            Parsed dict, or None if the line is blank or malformed JSON.
+        """
+        if not raw:
+            return None
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError as exc:
+            logger.warning("Skipping invalid JSON at line %d: %s", lineno, exc)
+            return None
+
     def _passes_filters(self, record: dict[str, Any]) -> bool:
         """Return True if all filters accept the record."""
         return all(f(record) for f in self._filters)
@@ -109,13 +128,9 @@ class RecordProcessor:
         def _lines() -> Iterator[dict[str, Any]]:
             with open(path, encoding="utf-8") as fh:
                 for lineno, raw in enumerate(fh, start=1):
-                    raw = raw.strip()
-                    if not raw:
-                        continue
-                    try:
-                        yield json.loads(raw)
-                    except json.JSONDecodeError as exc:
-                        logger.warning("Skipping invalid JSON at line %d: %s", lineno, exc)
+                    record = self._parse_line(raw.strip(), lineno)
+                    if record is not None:
+                        yield record
 
         yield from self.process_records(_lines())
 
