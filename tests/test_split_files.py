@@ -291,7 +291,9 @@ class TestDryRunFlag:
     def test_dry_run_parametrized_chunks(self, sample_json_file, tmp_path, num_chunks):
         from split_files import main
 
+        out_prefix = str(tmp_path / "dry_chunk_")
         with patch("sys.argv", ["split_files.py", str(sample_json_file),
+                                "--output-prefix", out_prefix,
                                 "--num-files", str(num_chunks), "--dry-run"]):
             main()
-        assert len(list(tmp_path.glob("*.json"))) == 0
+        assert len(list(tmp_path.glob("dry_chunk_*.json"))) == 0
