@@ -105,6 +105,62 @@ class LRUCache:
         logger.info("LRUCache cleared for %s", getattr(self._cached, "__name__", "?"))
 
 
+class DictCache:
+    """Simple time-to-live (TTL) dict cache for arbitrary keys.
+
+    Entries expire after *ttl* seconds from insertion.  A TTL of ``None``
+    means entries never expire.
+
+    Args:
+        ttl: Seconds before an entry expires; None for no expiry.
+        maxsize: Maximum number of entries; oldest are evicted when exceeded.
+
+    Example::
+
+        cache = DictCache(ttl=60)
+        cache.set("key", "value")
+        val = cache.get("key")   # returns "value"
+    """
+
+    def __init__(self, ttl: float | None = None, maxsize: int | None = None) -> None:
+        import time as _time
+        self._ttl = ttl
+        self._maxsize = maxsize
+        self._store: dict[Any, tuple[Any, float]] = {}
+        self._time = _time
+
+    def set(self, key: Any, value: Any) -> None:
+        """Insert *key* → *value* into the cache."""
+        if self._maxsize is not None and len(self._store) >= self._maxsize and key not in self._store:
+            oldest = next(iter(self._store))
+            del self._store[oldest]
+        self._store[key] = (value, self._time.monotonic())
+
+    def get(self, key: Any, default: Any = None) -> Any:
+        """Return the cached value for *key*, or *default* if missing/expired."""
+        if key not in self._store:
+            return default
+        value, ts = self._store[key]
+        if self._ttl is not None and (self._time.monotonic() - ts) > self._ttl:
+            del self._store[key]
+            return default
+        return value
+
+    def delete(self, key: Any) -> None:
+        """Remove *key* from the cache if present."""
+        self._store.pop(key, None)
+
+    def clear(self) -> None:
+        """Clear all entries."""
+        self._store.clear()
+
+    def __len__(self) -> int:
+        return len(self._store)
+
+    def __contains__(self, key: Any) -> bool:
+        return self.get(key, _SENTINEL := object()) is not _SENTINEL
+
+
 def cached(maxsize: int | None = 128) -> Callable:
     """Decorator factory that wraps a function in an :class:`LRUCache`.
 
