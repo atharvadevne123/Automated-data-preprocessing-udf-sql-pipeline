@@ -101,17 +101,19 @@ flowchart TD
 
 ## Features
 
-- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI; safely caps `--num-files` when it exceeds the line count so every output file gets at least one record
+- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI; safely caps `--num-files` when it exceeds the line count; `--dry-run` preview mode
 - **`--output-dir` support** — write all chunks to a dedicated directory (auto-created); combine with `--output-prefix` for full control over naming
-- **`--version` flag** — display the current tool version
-- **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative
+- **End-to-end pipeline** — `scripts/run_pipeline.py` orchestrates clean → sentiment → export in one command with configurable filters and output formats
+- **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative; `batch_execute()` for chunked INSERTs
 - **Flattened analytical tables** — `tbl_yelp_reviews` and `tbl_yelp_businesses` ready for SQL analytics
-- **`snowflake_connector.py`** — reads credentials from env vars; `execute_query()`, `health_check()`, `managed_connection()` context manager, `SNOWFLAKE_ROLE` support
-- **`utils/` package** — structured logging (`utils/logger.py`), input/output validators (`utils/validators.py`), metrics tracking (`utils/metrics.py`)
-- **`scripts/validate_jsonl.py`** — standalone CLI to validate any JSONL file before loading
-- **`scripts/benchmark.py`** — measure split throughput on synthetic datasets
-- **Expanded test suite** — 140+ parametrized pytest tests across 12 test modules (90 %+ coverage)
-- **GitHub Actions CI** — ruff lint + mypy type-check + pytest matrix (Python 3.10 / 3.11 / 3.12) with coverage artifacts on every push/PR
+- **`snowflake_connector.py`** — reads credentials from env vars; `execute_query()`, `health_check()`, `managed_connection()` context manager, `batch_execute()` chunked insert
+- **`pipeline/` package** — `FieldRenamer`, `TypeCoercer`, `ComputedFieldAdder` (transformer); `RecordJoiner` for left-joins; `StatsAggregator.merge()` for parallel aggregation; `analyze_stream()` lazy iterator
+- **`utils/` package** — structured logging, validators (`validate_date_format`, `validate_coordinates`, `validate_text_length`), `DictCache` with TTL, `RetryConfig`, `MemoryMetrics`, `FunctionProfiler`
+- **`scripts/validate_jsonl.py`** — validate JSONL for parse errors; `--required-fields` for schema checks
+- **`scripts/generate_report.py`** — JSON or Markdown report generation via `--format`
+- **`scripts/benchmark.py`** — measure split throughput; `--output-json` saves metrics to file
+- **Expanded test suite** — 300+ parametrized pytest tests across 20+ test modules (90 %+ coverage)
+- **Security scanning** — `bandit` integrated in GitHub Actions CI alongside ruff and mypy
 - **Docker support** — multi-stage `Dockerfile` + `docker-compose.yml`
 - **Secure credential handling** — no credentials in code; `.env.example` with full comments; `python-dotenv` auto-loads `.env`
 
@@ -253,7 +255,7 @@ python -m scripts.validate_jsonl path/to/file.jsonl
 python scripts/benchmark.py --records 100000 --chunks 10
 ```
 
-**Test suite: 140+ tests across 12 modules, 90 %+ coverage, Python 3.10 / 3.11 / 3.12.**
+**Test suite: 300+ tests across 20+ modules, 90 %+ coverage, Python 3.10 / 3.11 / 3.12.**
 
 ---
 
@@ -297,7 +299,7 @@ GROUP BY b.name, b.city ORDER BY positive_reviews DESC LIMIT 10;
 | Snowflake SQL | Data warehouse + UDF runtime |
 | Amazon S3 | Raw data staging |
 | TextBlob | Sentiment analysis (Positive / Neutral / Negative) |
-| pytest + pytest-cov | 140+ tests (90 %+ coverage), Python 3.10–3.12 matrix |
+| pytest + pytest-cov | 300+ tests (90 %+ coverage), Python 3.10–3.12 matrix |
 | ruff | Linting and import sorting |
 | mypy | Static type checking |
 | python-dotenv | `.env` loading |
@@ -450,18 +452,28 @@ See [docs/models.md](docs/models.md) for full API reference.
 
 | Script | Purpose |
 |--------|---------|
-| `split_files.py` | Split large JSONL into N chunks |
-| `scripts/validate_jsonl.py` | Validate JSONL for parse errors |
-| `scripts/analyze_sentiment.py` | Enrich JSONL with sentiment scores |
-| `scripts/generate_report.py` | Generate JSON summary report |
-| `scripts/benchmark.py` | Performance benchmark |
+| `split_files.py` | Split large JSONL into N chunks (`--dry-run` preview available) |
+| `scripts/run_pipeline.py` | End-to-end pipeline orchestration (clean → sentiment → export) |
+| `scripts/validate_jsonl.py` | Validate JSONL for parse errors (`--required-fields` schema check) |
+| `scripts/analyze_sentiment.py` | Enrich JSONL with sentiment scores (`--output-format jsonl\|json`) |
+| `scripts/generate_report.py` | Generate summary report (`--format json\|markdown`) |
+| `scripts/benchmark.py` | Performance benchmark (`--output-json` for persisting metrics) |
 
 ```bash
-# Analyze sentiment on a processed JSONL
-python scripts/analyze_sentiment.py reviews.jsonl output/enriched.jsonl
+# Run the full pipeline end-to-end
+python scripts/run_pipeline.py reviews.jsonl --output-dir output/ --output-format jsonl
 
-# Generate a processing report
-python scripts/generate_report.py output/enriched.jsonl --output report.json --top-n 20
+# Analyze sentiment on a processed JSONL (JSON array output)
+python scripts/analyze_sentiment.py reviews.jsonl output/enriched.jsonl --output-format json
+
+# Validate JSONL and check required fields
+python scripts/validate_jsonl.py reviews.jsonl --required-fields review_id user_id stars
+
+# Generate a Markdown report
+python scripts/generate_report.py output/enriched.jsonl --format markdown --output report.md
+
+# Benchmark split performance and save metrics
+python scripts/benchmark.py --records 100000 --chunks 10 --output-json metrics.json
 ```
 
 ---
