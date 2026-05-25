@@ -184,6 +184,67 @@ def sanitize_text(text: str, max_length: int = 10_000) -> str:
     return cleaned[:max_length]
 
 
+def validate_date_format(date_str: str) -> str:
+    """Validate that *date_str* matches YYYY-MM-DD format.
+
+    Args:
+        date_str: Date string to validate.
+
+    Returns:
+        *date_str* unchanged.
+
+    Raises:
+        ValidationError: if the string does not match YYYY-MM-DD.
+    """
+    import re
+    _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+    if not isinstance(date_str, str) or not _DATE_RE.match(date_str):
+        raise ValidationError(f"Date must be YYYY-MM-DD, got: {date_str!r}")
+    return date_str
+
+
+def validate_business_id_format(business_id: str) -> str:
+    """Validate that *business_id* is a non-empty string (Yelp IDs are 22 chars).
+
+    Args:
+        business_id: Business identifier string.
+
+    Returns:
+        *business_id* unchanged.
+
+    Raises:
+        ValidationError: if the identifier is empty or not a string.
+    """
+    if not isinstance(business_id, str) or not business_id.strip():
+        raise ValidationError(f"business_id must be a non-empty string, got: {business_id!r}")
+    return business_id
+
+
+def validate_coordinates(latitude: float, longitude: float) -> tuple[float, float]:
+    """Validate geographic coordinates are within valid ranges.
+
+    Args:
+        latitude: Latitude in degrees; must be in [-90.0, 90.0].
+        longitude: Longitude in degrees; must be in [-180.0, 180.0].
+
+    Returns:
+        Tuple of (latitude, longitude) as floats.
+
+    Raises:
+        ValidationError: if either value is out of range.
+    """
+    try:
+        lat = float(latitude)
+        lon = float(longitude)
+    except (TypeError, ValueError):
+        raise ValidationError(f"Coordinates must be numeric, got: lat={latitude!r}, lon={longitude!r}")
+    if not (-90.0 <= lat <= 90.0):
+        raise ValidationError(f"Latitude must be in [-90, 90], got {lat}")
+    if not (-180.0 <= lon <= 180.0):
+        raise ValidationError(f"Longitude must be in [-180, 180], got {lon}")
+    return lat, lon
+
+
 def validate_yelp_review_record(record: dict[str, Any]) -> dict[str, Any]:
     """Validate the required fields of a Yelp review record dict.
 
