@@ -85,6 +85,25 @@ class StatsAggregator:
         self._businesses: dict[str, BusinessStats] = {}
         self._global = GlobalStats()
 
+    def _update_business(self, bid: str, stars: float, useful: int) -> None:
+        """Create or update per-business stats for *bid*.
+
+        Args:
+            bid: Business identifier string (non-empty).
+            stars: Star rating for this review.
+            useful: Useful vote count for this review.
+        """
+        if bid not in self._businesses:
+            self._businesses[bid] = BusinessStats(business_id=bid)
+        bstats = self._businesses[bid]
+        bstats.review_count += 1
+        bstats.star_sum += stars
+        bstats.useful_sum += useful
+        if stars >= 4.0:
+            bstats.positive_count += 1
+        elif stars <= 2.0:
+            bstats.negative_count += 1
+
     def add(self, record: dict[str, Any]) -> None:
         """Ingest a single record and update all accumulators.
 
@@ -103,16 +122,7 @@ class StatsAggregator:
 
         bid = record.get("business_id", "")
         if bid:
-            if bid not in self._businesses:
-                self._businesses[bid] = BusinessStats(business_id=bid)
-            bstats = self._businesses[bid]
-            bstats.review_count += 1
-            bstats.star_sum += stars
-            bstats.useful_sum += int(record.get("useful", 0))
-            if stars >= 4.0:
-                bstats.positive_count += 1
-            elif stars <= 2.0:
-                bstats.negative_count += 1
+            self._update_business(bid, stars, int(record.get("useful", 0)))
 
     def add_batch(self, records: list[dict[str, Any]]) -> None:
         """Ingest a list of records.
