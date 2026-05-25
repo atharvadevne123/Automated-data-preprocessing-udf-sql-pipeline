@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 __version__ = "1.2.0"
 
+_PROGRESS_INTERVAL = 10_000
+
 
 def get_file_size_mb(filepath: Path) -> float:
     """Return the file size of *filepath* in megabytes.
@@ -50,6 +52,39 @@ def count_lines(filepath: Path) -> int:
         logger.error("Failed to read %s: %s", filepath, e)
         raise
     return count
+
+
+def _write_chunk(
+    fin,
+    output_filename: str,
+    chunk_size: int,
+    total_lines: int,
+    global_written: int,
+) -> tuple[int, int]:
+    """Write *chunk_size* lines from *fin* to *output_filename*.
+
+    Args:
+        fin: Open file handle positioned at the start of the chunk.
+        output_filename: Path string for the output file.
+        chunk_size: Maximum number of lines to write.
+        total_lines: Total lines in the source file (for progress logging).
+        global_written: Running count of lines written so far.
+
+    Returns:
+        ``(lines_written, updated_global_written)`` tuple.
+    """
+    written = 0
+    with open(output_filename, "w", encoding="utf-8") as out:
+        for _ in range(chunk_size):
+            line = fin.readline()
+            if not line:
+                break
+            out.write(line)
+            written += 1
+            global_written += 1
+            if global_written % _PROGRESS_INTERVAL == 0:
+                logger.info("Progress: %d / %d lines written", global_written, total_lines)
+    return written, global_written
 
 
 def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str]:
@@ -100,7 +135,6 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
         lines_per_file,
     )
 
-    _PROGRESS_INTERVAL = 10_000
     output_files: list[str] = []
     global_written = 0
     try:
@@ -110,17 +144,9 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
                 # Last chunk absorbs any remainder so no lines are dropped
                 chunk_size = lines_per_file + (remainder if i == num_files - 1 else 0)
                 try:
-                    with open(output_filename, "w", encoding="utf-8") as out:
-                        written = 0
-                        for _ in range(chunk_size):
-                            line = f.readline()
-                            if not line:
-                                break
-                            out.write(line)
-                            written += 1
-                            global_written += 1
-                            if global_written % _PROGRESS_INTERVAL == 0:
-                                logger.info("Progress: %d / %d lines written", global_written, total_lines)
+                    written, global_written = _write_chunk(
+                        f, output_filename, chunk_size, total_lines, global_written
+                    )
                     output_files.append(output_filename)
                     chunk_size_mb = get_file_size_mb(Path(output_filename))
                     logger.info(
