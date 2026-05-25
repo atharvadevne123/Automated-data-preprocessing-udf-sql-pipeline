@@ -78,6 +78,56 @@ def build_report(agg: StatsAggregator, top_n: int = 10) -> dict:
     }
 
 
+def build_markdown_report(report: dict) -> str:
+    """Render *report* as a Markdown string.
+
+    Args:
+        report: Dict produced by :func:`build_report`.
+
+    Returns:
+        Markdown-formatted report string.
+    """
+    summary = report["summary"]
+    lines: list[str] = [
+        "# Pipeline Report",
+        "",
+        "## Summary",
+        "",
+        "| Metric | Value |",
+        "|--------|-------|",
+        f"| Total records | {summary['total_records']} |",
+        f"| Unique businesses | {summary['unique_businesses']} |",
+        f"| Avg reviews/business | {summary['average_reviews_per_business']} |",
+        "",
+        "### Sentiment Counts",
+        "",
+        "| Sentiment | Count |",
+        "|-----------|-------|",
+    ]
+    for sentiment, count in summary.get("sentiment_counts", {}).items():
+        lines.append(f"| {sentiment} | {count} |")
+
+    lines += [
+        "",
+        "## Star Distribution",
+        "",
+        "| Stars | Count |",
+        "|-------|-------|",
+    ]
+    for star, count in sorted(report.get("star_distribution", {}).items()):
+        lines.append(f"| {star} | {count} |")
+
+    lines += ["", "## Top Businesses", ""]
+    for biz in report.get("top_businesses", []):
+        lines.append(
+            f"- **{biz.get('business_id', 'unknown')}**: "
+            f"{biz.get('review_count', 0)} reviews, "
+            f"avg {biz.get('avg_stars', 0):.2f} stars"
+        )
+
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
     """Generate a processing report from a JSONL file.
 
@@ -88,16 +138,20 @@ def main(argv: list[str] | None = None) -> int:
         Exit code: 0 = success, 1 = error.
     """
     parser = argparse.ArgumentParser(
-        description="Generate a JSON summary report from a processed JSONL file."
+        description="Generate a summary report from a processed JSONL file."
     )
     parser.add_argument("input", type=Path, help="Path to input JSONL file.")
     parser.add_argument(
         "--output", type=Path, default=None,
-        help="Path to write JSON report (defaults to stdout).",
+        help="Path to write report (defaults to stdout).",
     )
     parser.add_argument(
         "--top-n", type=int, default=10,
         help="Number of top businesses to include in the report (default: 10).",
+    )
+    parser.add_argument(
+        "--format", default="json", choices=["json", "markdown"],
+        help="Output format: 'json' (default) or 'markdown'.",
     )
     args = parser.parse_args(argv)
 
@@ -108,13 +162,17 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("%s", exc)
         return 1
 
-    report_json = json.dumps(report, indent=2)
+    if args.format == "markdown":
+        output_text = build_markdown_report(report)
+    else:
+        output_text = json.dumps(report, indent=2)
+
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(report_json, encoding="utf-8")
+        args.output.write_text(output_text, encoding="utf-8")
         logger.info("Report written to %s", args.output)
     else:
-        print(report_json)
+        print(output_text)
 
     return 0
 
