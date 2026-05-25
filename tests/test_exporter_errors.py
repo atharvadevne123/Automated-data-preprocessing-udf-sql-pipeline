@@ -66,11 +66,15 @@ class TestExporterErrorHandling:
         loaded = json.loads(out.read_text())
         assert loaded == records
 
-    @pytest.mark.parametrize("fmt", ["jsonl", "json", "csv"])
-    def test_export_dispatch_parametrized(self, tmp_path, fmt):
+    @pytest.mark.parametrize("fmt,kwargs", [
+        ("jsonl", {}),
+        ("json", {}),
+        ("csv", {"fields": ["k"]}),
+    ])
+    def test_export_dispatch_parametrized(self, tmp_path, fmt, kwargs):
         exporter = DataExporter()
         records = [{"k": "v"}]
         out = tmp_path / f"out.{fmt}"
-        count = exporter.export(records, out, fmt=fmt, fields=["k"])
+        count = exporter.export(records, out, fmt=fmt, **kwargs)
         assert count == 1
         assert out.exists()
