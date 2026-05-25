@@ -14,6 +14,46 @@ class MaxRetriesExceeded(Exception):
     """Raised when all retry attempts have been exhausted."""
 
 
+from dataclasses import dataclass, field
+
+
+@dataclass
+class RetryConfig:
+    """Reusable configuration object for the retry decorator.
+
+    Attributes:
+        exceptions: Exception types to catch and retry.
+        max_attempts: Maximum total invocations (first attempt + retries).
+        delay: Initial delay in seconds between attempts.
+        backoff: Multiplier applied to delay after each attempt.
+        jitter: Random seconds added to each delay to reduce thundering herd.
+
+    Example::
+
+        cfg = RetryConfig(exceptions=(IOError,), max_attempts=5, delay=0.5, backoff=2.0)
+
+        @cfg.as_decorator()
+        def fetch_data(url: str) -> bytes:
+            ...
+    """
+
+    exceptions: tuple[Type[Exception], ...] = field(default_factory=lambda: (Exception,))
+    max_attempts: int = 3
+    delay: float = 1.0
+    backoff: float = 2.0
+    jitter: float = 0.0
+
+    def as_decorator(self) -> Callable:
+        """Return a retry decorator configured with this instance's parameters."""
+        return retry(
+            exceptions=self.exceptions,
+            max_attempts=self.max_attempts,
+            delay=self.delay,
+            backoff=self.backoff,
+            jitter=self.jitter,
+        )
+
+
 def retry(
     exceptions: tuple[Type[Exception], ...] = (Exception,),
     max_attempts: int = 3,
