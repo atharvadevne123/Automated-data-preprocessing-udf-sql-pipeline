@@ -84,6 +84,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--chunks", type=int, default=10, help="Number of output chunks (default: 10)."
     )
+    parser.add_argument(
+        "--output-json", type=Path, default=None,
+        help="Write benchmark metrics as JSON to this file path.",
+    )
     args = parser.parse_args(argv)
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -102,6 +106,11 @@ def main(argv: list[str] | None = None) -> None:
         metrics["total_records"],
         metrics["num_chunks"],
     )
+
+    if args.output_json:
+        args.output_json.parent.mkdir(parents=True, exist_ok=True)
+        args.output_json.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+        logger.info("Metrics written to %s", args.output_json)
 
 
 if __name__ == "__main__":
