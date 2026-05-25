@@ -100,7 +100,9 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
         lines_per_file,
     )
 
+    _PROGRESS_INTERVAL = 10_000
     output_files: list[str] = []
+    global_written = 0
     try:
         with open(input_file, encoding="utf-8") as f:
             for i in range(num_files):
@@ -116,6 +118,9 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
                                 break
                             out.write(line)
                             written += 1
+                            global_written += 1
+                            if global_written % _PROGRESS_INTERVAL == 0:
+                                logger.info("Progress: %d / %d lines written", global_written, total_lines)
                     output_files.append(output_filename)
                     chunk_size_mb = get_file_size_mb(Path(output_filename))
                     logger.info(
