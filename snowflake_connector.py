@@ -171,6 +171,38 @@ def get_connection_iterator(conn: Any, sql: str, params: Sequence[Any] | None = 
         cursor.close()
 
 
+def batch_execute(
+    conn: Any,
+    sql: str,
+    data: Sequence[Sequence[Any]],
+    batch_size: int = 1000,
+) -> int:
+    """Split *data* into batches and call executemany for each batch.
+
+    Useful when a single executemany would exhaust server memory for large
+    data sets.  Each batch is committed separately.
+
+    Args:
+        conn: Open Snowflake connection.
+        sql: Parameterised SQL statement.
+        data: Full set of row tuples to insert.
+        batch_size: Number of rows per batch (default 1000).
+
+    Returns:
+        Total number of rows affected.
+
+    Raises:
+        Exception: if any batch fails.
+    """
+    total = 0
+    for i in range(0, len(data), batch_size):
+        chunk = data[i : i + batch_size]
+        total += execute_many(conn, sql, chunk)
+        logger.info("batch_execute: committed batch %d/%d (%d rows)", i // batch_size + 1, -(-len(data) // batch_size), len(chunk))
+    logger.info("batch_execute: %d total rows inserted", total)
+    return total
+
+
 def execute_many(conn: Any, sql: str, data: Sequence[Sequence[Any]]) -> int:
     """Execute *sql* with multiple rows of bind parameters (bulk insert).
 
