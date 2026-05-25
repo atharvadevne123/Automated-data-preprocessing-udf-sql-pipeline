@@ -46,10 +46,14 @@ class DataExporter:
         """
         self._ensure_parent(path)
         count = 0
-        with open(path, "w", encoding=self._encoding) as fh:
-            for record in records:
-                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
-                count += 1
+        try:
+            with open(path, "w", encoding=self._encoding) as fh:
+                for record in records:
+                    fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    count += 1
+        except OSError as exc:
+            logger.error("Failed to write JSONL to %s: %s", path, exc)
+            raise
         logger.info("Exported %d records to JSONL: %s", count, path)
         return count
 
@@ -63,10 +67,17 @@ class DataExporter:
 
         Returns:
             Number of records written.
+
+        Raises:
+            OSError: on write failure.
         """
         self._ensure_parent(path)
-        with open(path, "w", encoding=self._encoding) as fh:
-            json.dump(records, fh, indent=indent, ensure_ascii=False)
+        try:
+            with open(path, "w", encoding=self._encoding) as fh:
+                json.dump(records, fh, indent=indent, ensure_ascii=False)
+        except OSError as exc:
+            logger.error("Failed to write JSON to %s: %s", path, exc)
+            raise
         logger.info("Exported %d records to JSON: %s", len(records), path)
         return len(records)
 
@@ -88,18 +99,23 @@ class DataExporter:
 
         Raises:
             ValueError: if *records* is empty and *fields* is not provided.
+            OSError: on write failure.
         """
         if not records and fields is None:
             raise ValueError("Cannot infer CSV columns from an empty record list — pass fields=")
         self._ensure_parent(path)
         fieldnames = fields or list(records[0].keys())
         count = 0
-        with open(path, "w", newline="", encoding=self._encoding) as fh:
-            writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
-            writer.writeheader()
-            for record in records:
-                writer.writerow(record)
-                count += 1
+        try:
+            with open(path, "w", newline="", encoding=self._encoding) as fh:
+                writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
+                writer.writeheader()
+                for record in records:
+                    writer.writerow(record)
+                    count += 1
+        except OSError as exc:
+            logger.error("Failed to write CSV to %s: %s", path, exc)
+            raise
         logger.info("Exported %d records to CSV: %s", count, path)
         return count
 
