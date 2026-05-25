@@ -237,11 +237,33 @@ def main() -> None:
         help="Number of output files to split into (default: 10)",
     )
     parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Preview the split plan (line counts per chunk) without writing any files.",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",
     )
     args = parser.parse_args()
+
+    if args.dry_run:
+        try:
+            total = count_lines(args.input_file)
+            num = min(args.num_files, total) if total > 0 else args.num_files
+            lpp = total // num if num > 0 else 0
+            rem = total % num if num > 0 else 0
+            logger.info("[DRY RUN] Input: %s, total lines: %d", args.input_file, total)
+            for i in range(num):
+                size = lpp + (rem if i == num - 1 else 0)
+                logger.info("[DRY RUN]   chunk %d: %d lines", i + 1, size)
+            logger.info("[DRY RUN] No files written.")
+        except (FileNotFoundError, OSError) as e:
+            logger.error("%s", e)
+            sys.exit(1)
+        return
 
     prefix = args.output_prefix
     if args.output_dir is not None:
