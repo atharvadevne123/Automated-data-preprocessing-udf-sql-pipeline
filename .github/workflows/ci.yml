@@ -26,14 +26,21 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov ruff mypy textblob pydantic
+          pip install pytest pytest-cov ruff mypy textblob pydantic bandit
 
       - name: Lint with ruff
         run: ruff check . --select E,F,W,I --ignore E501
 
+      - name: Format check with ruff
+        run: ruff format --check .
+
       - name: Type-check with mypy
         run: mypy split_files.py snowflake_connector.py utils/ pipeline/ models/ --ignore-missing-imports --no-error-summary
         continue-on-error: true
+
+      - name: Security scan with bandit
+        run: bandit -r pipeline/ utils/ models/ scripts/ split_files.py snowflake_connector.py -ll --exit-zero
+        continue-on-error: false
 
       - name: Run tests with coverage
         run: |
