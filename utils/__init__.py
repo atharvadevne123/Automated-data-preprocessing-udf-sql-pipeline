@@ -20,6 +20,7 @@ from utils.validators import (
     validate_num_files,
     validate_output_prefix,
     validate_star_rating,
+    validate_text_length,
     validate_yelp_review_record,
 )
 
@@ -40,6 +41,7 @@ __all__ = [
     "validate_business_id_format",
     "validate_coordinates",
     "sanitize_text",
+    "validate_text_length",
     "validate_yelp_review_record",
     "coerce_record",
     # metrics
