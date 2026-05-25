@@ -109,6 +109,25 @@ class SentimentAnalyzer:
         """
         return [self.analyze(t) for t in texts]
 
+    def analyze_batch_parallel(
+        self,
+        texts: list[str],
+        max_workers: int = 4,
+    ) -> list[SentimentResult]:
+        """Analyse texts concurrently using threads and preserve input order.
+
+        Args:
+            texts: List of input strings to analyse.
+            max_workers: Number of worker threads (default 4).
+
+        Returns:
+            List of SentimentResult objects in the same order as *texts*.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            return list(executor.map(self.analyze, texts))
+
     def enrich_record(self, record: dict[str, Any], text_field: str = "text") -> dict[str, Any]:
         """Add sentiment fields to a record dict in-place and return it.
 
