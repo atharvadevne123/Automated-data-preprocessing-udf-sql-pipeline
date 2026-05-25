@@ -5,6 +5,7 @@ from __future__ import annotations
 import functools
 import logging
 import time
+from dataclasses import dataclass, field
 from typing import Any, Callable, Type
 
 logger = logging.getLogger(__name__)
@@ -12,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 class MaxRetriesExceeded(Exception):
     """Raised when all retry attempts have been exhausted."""
-
-
-from dataclasses import dataclass, field
 
 
 @dataclass
