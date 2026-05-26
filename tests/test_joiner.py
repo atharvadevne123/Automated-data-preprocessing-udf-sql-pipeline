@@ -6,7 +6,6 @@ import pytest
 
 from pipeline.joiner import RecordJoiner
 
-
 BUSINESSES = [
     {"business_id": "biz1", "name": "Café A", "stars": 4.5},
     {"business_id": "biz2", "name": "Diner B", "stars": 3.0},

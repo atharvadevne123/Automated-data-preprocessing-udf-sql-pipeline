@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from pipeline.cleaner import CleanerStats, TextCleaner
+from pipeline.cleaner import TextCleaner
 
 
 class TestStripPunctuation:

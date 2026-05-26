@@ -77,7 +77,7 @@ class TestRunPipeline:
         output_dir = tmp_path / "out"
         result = run_pipeline(sample_jsonl, output_dir, output_format="jsonl")
         out_path = Path(result["output"])
-        lines = [json.loads(l) for l in out_path.read_text().strip().split("\n")]
+        lines = [json.loads(ln) for ln in out_path.read_text().strip().split("\n")]
         assert all("sentiment_label" in r for r in lines)
 
     @pytest.mark.parametrize("fmt", ["jsonl", "json", "csv"])

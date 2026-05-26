@@ -258,8 +258,8 @@ class TestDryRunFlag:
     """Tests for the --dry-run CLI flag."""
 
     def test_dry_run_no_files_written(self, sample_json_file, tmp_path):
-        from split_files import count_lines, main
-        import sys
+
+        from split_files import main
 
         output_prefix = str(tmp_path / "dry_")
         with patch("sys.argv", ["split_files.py", str(sample_json_file),
@@ -271,6 +271,7 @@ class TestDryRunFlag:
 
     def test_dry_run_logs_correct_line_counts(self, sample_json_file, tmp_path, caplog):
         import logging
+
         from split_files import main
 
         with patch("sys.argv", ["split_files.py", str(sample_json_file),
