@@ -8,25 +8,31 @@ from pipeline.sentiment import SentimentAnalyzer, SentimentResult
 
 
 class TestLabelAssignment:
-    @pytest.mark.parametrize("polarity,expected_label", [
-        (0.5, "positive"),
-        (0.11, "positive"),
-        (0.1, "neutral"),
-        (0.0, "neutral"),
-        (-0.05, "neutral"),
-        (-0.11, "negative"),
-        (-0.8, "negative"),
-    ])
+    @pytest.mark.parametrize(
+        "polarity,expected_label",
+        [
+            (0.5, "positive"),
+            (0.11, "positive"),
+            (0.1, "neutral"),
+            (0.0, "neutral"),
+            (-0.05, "neutral"),
+            (-0.11, "negative"),
+            (-0.8, "negative"),
+        ],
+    )
     def test_label_from_polarity(self, polarity, expected_label):
         a = SentimentAnalyzer(positive_threshold=0.1, negative_threshold=-0.1)
         assert a._label(polarity) == expected_label
 
-    @pytest.mark.parametrize("pos_thresh,neg_thresh,polarity,expected", [
-        (0.3, -0.3, 0.2, "neutral"),
-        (0.3, -0.3, 0.4, "positive"),
-        (0.3, -0.3, -0.4, "negative"),
-        (0.05, -0.05, 0.06, "positive"),
-    ])
+    @pytest.mark.parametrize(
+        "pos_thresh,neg_thresh,polarity,expected",
+        [
+            (0.3, -0.3, 0.2, "neutral"),
+            (0.3, -0.3, 0.4, "positive"),
+            (0.3, -0.3, -0.4, "negative"),
+            (0.05, -0.05, 0.06, "positive"),
+        ],
+    )
     def test_custom_threshold_label(self, pos_thresh, neg_thresh, polarity, expected):
         a = SentimentAnalyzer(positive_threshold=pos_thresh, negative_threshold=neg_thresh)
         assert a._label(polarity) == expected

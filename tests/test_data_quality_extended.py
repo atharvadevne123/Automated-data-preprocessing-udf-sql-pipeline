@@ -53,10 +53,7 @@ def test_numeric_fields_unchanged_after_split(tmp_path: Path) -> None:
 
 
 def test_nested_dict_preserved_after_split(tmp_path: Path) -> None:
-    records = [
-        {"id": i, "meta": {"city": f"City{i}", "rating": i % 5}}
-        for i in range(12)
-    ]
+    records = [{"id": i, "meta": {"city": f"City{i}", "rating": i % 5}} for i in range(12)]
     f = tmp_path / "nested.jsonl"
     _write_jsonl(f, records)
     outputs = split_file(f, str(tmp_path / "out_"), 4)

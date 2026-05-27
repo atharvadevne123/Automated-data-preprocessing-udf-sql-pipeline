@@ -90,9 +90,16 @@ class TestSplitFileExtended:
         with pytest.raises(ValueError, match="empty"):
             split_file(path, str(tmp_path / "c_"), 3)
 
-    @pytest.mark.parametrize("n,chunks", [
-        (1, 1), (10, 2), (10, 5), (100, 10), (50, 7),
-    ])
+    @pytest.mark.parametrize(
+        "n,chunks",
+        [
+            (1, 1),
+            (10, 2),
+            (10, 5),
+            (100, 10),
+            (50, 7),
+        ],
+    )
     def test_various_n_and_chunks(self, tmp_path, n, chunks):
         path = _make_jsonl(n)
         outputs = split_file(path, str(tmp_path / "c_"), chunks)

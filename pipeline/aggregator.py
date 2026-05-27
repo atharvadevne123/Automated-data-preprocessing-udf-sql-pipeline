@@ -193,8 +193,7 @@ class StatsAggregator:
         result = [
             b
             for b in self._businesses.values()
-            if b.review_count >= min_reviews
-            and min_avg_stars <= b.average_stars <= max_avg_stars
+            if b.review_count >= min_reviews and min_avg_stars <= b.average_stars <= max_avg_stars
         ]
         result.sort(key=lambda b: b.average_stars, reverse=True)
         return result

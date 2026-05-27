@@ -78,7 +78,10 @@ def analyze_file(
 
     logger.info(
         "Sentiment analysis complete: %d total | %d positive | %d negative | %d neutral",
-        counts["total"], counts["positive"], counts["negative"], counts["neutral"],
+        counts["total"],
+        counts["positive"],
+        counts["negative"],
+        counts["neutral"],
     )
     return counts
 
@@ -92,24 +95,26 @@ def main(argv: list[str] | None = None) -> int:
     Returns:
         Exit code: 0 = success, 1 = error.
     """
-    parser = argparse.ArgumentParser(
-        description="Enrich a JSONL file with TextBlob sentiment scores."
-    )
+    parser = argparse.ArgumentParser(description="Enrich a JSONL file with TextBlob sentiment scores.")
     parser.add_argument("input", type=Path, help="Path to input JSONL file.")
     parser.add_argument("output", type=Path, help="Path to write enriched JSONL output.")
+    parser.add_argument("--text-field", default="text", help="Record field containing review text (default: text).")
     parser.add_argument(
-        "--text-field", default="text", help="Record field containing review text (default: text)."
-    )
-    parser.add_argument(
-        "--positive-threshold", type=float, default=0.1,
+        "--positive-threshold",
+        type=float,
+        default=0.1,
         help="Polarity threshold for positive label (default: 0.1).",
     )
     parser.add_argument(
-        "--negative-threshold", type=float, default=-0.1,
+        "--negative-threshold",
+        type=float,
+        default=-0.1,
         help="Polarity threshold for negative label (default: -0.1).",
     )
     parser.add_argument(
-        "--output-format", default="jsonl", choices=["jsonl", "json"],
+        "--output-format",
+        default="jsonl",
+        choices=["jsonl", "json"],
         help="Output format: 'jsonl' (default) or 'json' array.",
     )
     args = parser.parse_args(argv)

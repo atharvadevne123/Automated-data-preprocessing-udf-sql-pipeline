@@ -67,8 +67,7 @@ def get_connection() -> Any:
         import snowflake.connector  # type: ignore[import-untyped]
     except ImportError as exc:
         raise ImportError(
-            "snowflake-connector-python is required. "
-            "Install it with: pip install snowflake-connector-python"
+            "snowflake-connector-python is required. Install it with: pip install snowflake-connector-python"
         ) from exc
 
     params = get_connection_params()
@@ -198,7 +197,12 @@ def batch_execute(
     for i in range(0, len(data), batch_size):
         chunk = data[i : i + batch_size]
         total += execute_many(conn, sql, chunk)
-        logger.info("batch_execute: committed batch %d/%d (%d rows)", i // batch_size + 1, -(-len(data) // batch_size), len(chunk))
+        logger.info(
+            "batch_execute: committed batch %d/%d (%d rows)",
+            i // batch_size + 1,
+            -(-len(data) // batch_size),
+            len(chunk),
+        )
     logger.info("batch_execute: %d total rows inserted", total)
     return total
 

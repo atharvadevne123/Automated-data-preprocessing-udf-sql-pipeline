@@ -24,8 +24,13 @@ def _write_jsonl(path: Path, records: list[dict]) -> None:
 def review_jsonl(tmp_path):
     path = tmp_path / "reviews.jsonl"
     records = [
-        {"review_id": f"r{i}", "business_id": f"b{i % 3}", "stars": float(i % 5 + 1),
-         "text": f"<b>Review {i}</b> http://yelp.com" + ("!" * 5), "useful": i % 3}
+        {
+            "review_id": f"r{i}",
+            "business_id": f"b{i % 3}",
+            "stars": float(i % 5 + 1),
+            "text": f"<b>Review {i}</b> http://yelp.com" + ("!" * 5),
+            "useful": i % 3,
+        }
         for i in range(30)
     ]
     _write_jsonl(path, records)
@@ -104,10 +109,13 @@ class TestFullPipeline:
     def test_pipeline_handles_empty_text(self, tmp_path):
         """Records with empty text should not crash the pipeline."""
         path = tmp_path / "empty_text.jsonl"
-        _write_jsonl(path, [
-            {"review_id": "r1", "business_id": "b1", "stars": 3.0, "text": ""},
-            {"review_id": "r2", "business_id": "b1", "stars": 4.0, "text": None},
-        ])
+        _write_jsonl(
+            path,
+            [
+                {"review_id": "r1", "business_id": "b1", "stars": 3.0, "text": ""},
+                {"review_id": "r2", "business_id": "b1", "stars": 4.0, "text": None},
+            ],
+        )
         processor = RecordProcessor()
         cleaner = TextCleaner()
         analyzer = SentimentAnalyzer()

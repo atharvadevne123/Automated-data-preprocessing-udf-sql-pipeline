@@ -57,9 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     Returns:
         Exit code: 0 = valid, 1 = invalid, 2 = usage error.
     """
-    parser = argparse.ArgumentParser(
-        description="Validate a newline-delimited JSON file for parse and schema errors."
-    )
+    parser = argparse.ArgumentParser(description="Validate a newline-delimited JSON file for parse and schema errors.")
     parser.add_argument("file", type=Path, help="Path to the JSONL file to validate.")
     parser.add_argument(
         "--max-errors",

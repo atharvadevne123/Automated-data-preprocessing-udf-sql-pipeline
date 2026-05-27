@@ -46,9 +46,7 @@ def test_empty_split_output_passes_validation(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("num_chunks", [2, 5, 10])
-def test_pipeline_split_then_validate(
-    sample_jsonl: Path, tmp_path: Path, num_chunks: int
-) -> None:
+def test_pipeline_split_then_validate(sample_jsonl: Path, tmp_path: Path, num_chunks: int) -> None:
     outputs = split_file(sample_jsonl, str(tmp_path / f"n{num_chunks}_"), num_chunks)
     for path in outputs:
         errors = validate_jsonl_file(Path(path))

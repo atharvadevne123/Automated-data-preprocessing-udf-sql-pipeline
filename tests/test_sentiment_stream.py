@@ -16,6 +16,7 @@ class TestAnalyzeStream:
     def test_returns_iterator(self, analyzer):
         result = analyzer.analyze_stream(iter(["hello"]))
         import types
+
         assert isinstance(result, types.GeneratorType)
 
     def test_yields_sentiment_results(self, analyzer):

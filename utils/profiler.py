@@ -25,6 +25,7 @@ class FunctionProfiler:
 
     def __init__(self, func: Any) -> None:
         import functools
+
         self._func = func
         functools.update_wrapper(self, func)
         self._calls: int = 0
@@ -106,6 +107,7 @@ def profile_memory(label: str = "") -> dict[str, Any]:
         Dict with ``current_mb``, ``peak_mb``, and ``label`` keys.
     """
     import tracemalloc
+
     if not tracemalloc.is_tracing():
         tracemalloc.start()
     current, peak = tracemalloc.get_traced_memory()

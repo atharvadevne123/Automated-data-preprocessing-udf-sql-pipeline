@@ -54,9 +54,14 @@ class TestRetryOnErrorCoverage:
         result = retry_on_error(greet, "World", greeting="Hi", max_attempts=1)
         assert result == "Hi, World!"
 
-    @pytest.mark.parametrize("retries,fail_on", [
-        (2, 1), (3, 2), (4, 3),
-    ])
+    @pytest.mark.parametrize(
+        "retries,fail_on",
+        [
+            (2, 1),
+            (3, 2),
+            (4, 3),
+        ],
+    )
     def test_succeeds_on_nth_attempt(self, retries, fail_on):
         calls = []
 
@@ -66,9 +71,7 @@ class TestRetryOnErrorCoverage:
                 raise IOError("retry")
             return "done"
 
-        result = retry_on_error(
-            sometimes_fails, exceptions=(IOError,), max_attempts=retries + 1, delay=0
-        )
+        result = retry_on_error(sometimes_fails, exceptions=(IOError,), max_attempts=retries + 1, delay=0)
         assert result == "done"
         assert len(calls) == fail_on + 1
 

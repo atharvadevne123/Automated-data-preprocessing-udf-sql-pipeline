@@ -69,9 +69,7 @@ def test_get_connection_logs_account_and_database(
     assert any("test-acct" in r.message or "test-db" in r.message for r in caplog.records)
 
 
-def test_get_connection_logs_on_failure(
-    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
-) -> None:
+def test_get_connection_logs_on_failure(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
     import logging
 
     for var, val in _BASE_ENV.items():
@@ -102,9 +100,7 @@ def test_get_connection_params_warehouse_value(monkeypatch: pytest.MonkeyPatch) 
 
 
 @pytest.mark.parametrize("schema", ["PUBLIC", "DEV", "ANALYTICS", "RAW"])
-def test_get_connection_params_various_schemas(
-    monkeypatch: pytest.MonkeyPatch, schema: str
-) -> None:
+def test_get_connection_params_various_schemas(monkeypatch: pytest.MonkeyPatch, schema: str) -> None:
     for var, val in _BASE_ENV.items():
         monkeypatch.setenv(var, val)
     monkeypatch.setenv("SNOWFLAKE_SCHEMA", schema)

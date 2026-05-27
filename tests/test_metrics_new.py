@@ -45,9 +45,15 @@ class TestValidationMetrics:
         assert d["total"] == 100
         assert d["error_rate"] == pytest.approx(0.1)
 
-    @pytest.mark.parametrize("total,invalid,expected", [
-        (10, 0, 0.0), (10, 10, 1.0), (10, 5, 0.5), (0, 0, 0.0),
-    ])
+    @pytest.mark.parametrize(
+        "total,invalid,expected",
+        [
+            (10, 0, 0.0),
+            (10, 10, 1.0),
+            (10, 5, 0.5),
+            (0, 0, 0.0),
+        ],
+    )
     def test_error_rate_parametrized(self, total, invalid, expected):
         v = ValidationMetrics(total=total, invalid=invalid)
         assert v.error_rate == pytest.approx(expected)
@@ -100,9 +106,14 @@ class TestPipelineRunMetrics:
         p = PipelineRunMetrics(pipeline_name="my_pipeline")
         assert p.to_dict()["pipeline_name"] == "my_pipeline"
 
-    @pytest.mark.parametrize("in_r,out_r,expected_drop", [
-        (100, 100, 0.0), (100, 0, 1.0), (100, 50, 0.5),
-    ])
+    @pytest.mark.parametrize(
+        "in_r,out_r,expected_drop",
+        [
+            (100, 100, 0.0),
+            (100, 0, 1.0),
+            (100, 50, 0.5),
+        ],
+    )
     def test_drop_rate_parametrized(self, in_r, out_r, expected_drop):
         p = PipelineRunMetrics(pipeline_name="t", input_records=in_r, output_records=out_r)
         assert p.drop_rate == pytest.approx(expected_drop)

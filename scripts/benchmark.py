@@ -37,9 +37,7 @@ def generate_synthetic_jsonl(path: Path, num_records: int) -> None:
     logger.info("Generated %.2f MB", size_mb)
 
 
-def benchmark_split(
-    input_path: Path, num_chunks: int, output_dir: Path
-) -> dict[str, float]:
+def benchmark_split(input_path: Path, num_chunks: int, output_dir: Path) -> dict[str, float]:
     """Time a split operation and return metrics.
 
     Args:
@@ -60,9 +58,7 @@ def benchmark_split(
     outputs = split_file(input_path, prefix, num_chunks)
     elapsed = time.perf_counter() - start
 
-    total_lines = sum(
-        sum(1 for _ in open(o, encoding="utf-8")) for o in outputs
-    )
+    total_lines = sum(sum(1 for _ in open(o, encoding="utf-8")) for o in outputs)
     records_per_sec = total_lines / elapsed if elapsed > 0 else float("inf")
     mb_per_sec = file_size_mb / elapsed if elapsed > 0 else float("inf")
 
@@ -78,14 +74,12 @@ def benchmark_split(
 def main(argv: list[str] | None = None) -> None:
     """Run the benchmark with configurable parameters."""
     parser = argparse.ArgumentParser(description="Benchmark split_files.py performance.")
+    parser.add_argument("--records", type=int, default=10_000, help="Number of synthetic records (default: 10000).")
+    parser.add_argument("--chunks", type=int, default=10, help="Number of output chunks (default: 10).")
     parser.add_argument(
-        "--records", type=int, default=10_000, help="Number of synthetic records (default: 10000)."
-    )
-    parser.add_argument(
-        "--chunks", type=int, default=10, help="Number of output chunks (default: 10)."
-    )
-    parser.add_argument(
-        "--output-json", type=Path, default=None,
+        "--output-json",
+        type=Path,
+        default=None,
         help="Write benchmark metrics as JSON to this file path.",
     )
     args = parser.parse_args(argv)

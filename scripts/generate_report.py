@@ -61,11 +61,7 @@ def build_report(agg: StatsAggregator, top_n: int = 10) -> dict:
     global_stats = agg.global_stats().to_dict()
     top_biz = [b.to_dict() for b in agg.top_businesses(n=top_n)]
     all_biz = agg.all_business_stats()
-    avg_review_count = (
-        sum(b["review_count"] for b in all_biz) / len(all_biz)
-        if all_biz
-        else 0.0
-    )
+    avg_review_count = sum(b["review_count"] for b in all_biz) / len(all_biz) if all_biz else 0.0
     return {
         "summary": {
             "total_records": global_stats["total_records"],
@@ -137,20 +133,24 @@ def main(argv: list[str] | None = None) -> int:
     Returns:
         Exit code: 0 = success, 1 = error.
     """
-    parser = argparse.ArgumentParser(
-        description="Generate a summary report from a processed JSONL file."
-    )
+    parser = argparse.ArgumentParser(description="Generate a summary report from a processed JSONL file.")
     parser.add_argument("input", type=Path, help="Path to input JSONL file.")
     parser.add_argument(
-        "--output", type=Path, default=None,
+        "--output",
+        type=Path,
+        default=None,
         help="Path to write report (defaults to stdout).",
     )
     parser.add_argument(
-        "--top-n", type=int, default=10,
+        "--top-n",
+        type=int,
+        default=10,
         help="Number of top businesses to include in the report (default: 10).",
     )
     parser.add_argument(
-        "--format", default="json", choices=["json", "markdown"],
+        "--format",
+        default="json",
+        choices=["json", "markdown"],
         help="Output format: 'json' (default) or 'markdown'.",
     )
     args = parser.parse_args(argv)

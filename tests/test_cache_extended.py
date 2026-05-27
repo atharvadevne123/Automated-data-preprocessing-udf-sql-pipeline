@@ -8,13 +8,16 @@ from utils.cache import CacheStats, LRUCache, cached
 
 
 class TestCacheStatsExtended:
-    @pytest.mark.parametrize("hits,misses,expected_rate", [
-        (0, 0, 0.0),
-        (10, 0, 1.0),
-        (0, 10, 0.0),
-        (7, 3, 0.7),
-        (1, 99, 0.01),
-    ])
+    @pytest.mark.parametrize(
+        "hits,misses,expected_rate",
+        [
+            (0, 0, 0.0),
+            (10, 0, 1.0),
+            (0, 10, 0.0),
+            (7, 3, 0.7),
+            (1, 99, 0.01),
+        ],
+    )
     def test_hit_rate_parametrized(self, hits, misses, expected_rate):
         s = CacheStats()
         s.hits = hits
@@ -89,7 +92,7 @@ class TestCachedDecoratorExtended:
 
         @cached(maxsize=10)
         def cube(x):
-            return x ** 3
+            return x**3
 
         assert square(4) == 16
         assert cube(3) == 27

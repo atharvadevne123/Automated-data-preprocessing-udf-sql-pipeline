@@ -40,24 +40,30 @@ class TestValidateStarRating:
 
 
 class TestValidateEmail:
-    @pytest.mark.parametrize("email", [
-        "user@example.com",
-        "name.last@domain.co.uk",
-        "test+tag@sub.domain.org",
-        " user@example.com ",
-    ])
+    @pytest.mark.parametrize(
+        "email",
+        [
+            "user@example.com",
+            "name.last@domain.co.uk",
+            "test+tag@sub.domain.org",
+            " user@example.com ",
+        ],
+    )
     def test_valid_emails(self, email):
         result = validate_email(email)
         assert "@" in result
 
-    @pytest.mark.parametrize("email", [
-        "",
-        "notanemail",
-        "@nodomain.com",
-        "user@",
-        "user@domain",
-        None,
-    ])
+    @pytest.mark.parametrize(
+        "email",
+        [
+            "",
+            "notanemail",
+            "@nodomain.com",
+            "user@",
+            "user@domain",
+            None,
+        ],
+    )
     def test_invalid_emails_raise(self, email):
         with pytest.raises((ValidationError, AttributeError)):
             validate_email(email or "")

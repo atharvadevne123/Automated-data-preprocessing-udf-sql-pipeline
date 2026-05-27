@@ -27,10 +27,13 @@ class TestStripPunctuation:
         assert "?" not in result
         assert "great" in result
 
-    @pytest.mark.parametrize("text,contains", [
-        ("one,two", "onetwo"),
-        ("a.b.c", "abc"),
-    ])
+    @pytest.mark.parametrize(
+        "text,contains",
+        [
+            ("one,two", "onetwo"),
+            ("a.b.c", "abc"),
+        ],
+    )
     def test_parametrized_strip(self, text, contains):
         cleaner = TextCleaner(strip_punctuation=True, collapse_whitespace=True)
         result = cleaner.clean(text).replace(" ", "")
@@ -56,8 +59,9 @@ class TestCleanerStats:
         assert cleaner.stats.total_cleaned == 0
 
     def test_chars_removed(self):
-        cleaner = TextCleaner(track_stats=True, lowercase=False, strip_urls=False,
-                              strip_html=False, collapse_whitespace=False)
+        cleaner = TextCleaner(
+            track_stats=True, lowercase=False, strip_urls=False, strip_html=False, collapse_whitespace=False
+        )
         cleaner.clean("hello")
         assert cleaner.stats.chars_removed >= 0
 

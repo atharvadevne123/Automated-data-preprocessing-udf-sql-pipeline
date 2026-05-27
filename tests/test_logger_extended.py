@@ -38,9 +38,7 @@ def test_get_logger_handler_formatter_has_timestamp() -> None:
         ("CRITICAL", logging.CRITICAL),
     ],
 )
-def test_get_logger_env_level_override(
-    monkeypatch: pytest.MonkeyPatch, env_level: str, expected: int
-) -> None:
+def test_get_logger_env_level_override(monkeypatch: pytest.MonkeyPatch, env_level: str, expected: int) -> None:
     monkeypatch.setenv("LOG_LEVEL", env_level)
     logger = get_logger(f"env.override.{env_level.lower()}")
     assert logger.level == expected

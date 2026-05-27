@@ -22,12 +22,15 @@ class TestGetJsonLogger:
         class _JsonFmt(logging.Formatter):
             def format(self, record):
                 import json as _j
-                return _j.dumps({
-                    "timestamp": self.formatTime(record),
-                    "level": record.levelname,
-                    "logger": record.name,
-                    "message": record.getMessage(),
-                })
+
+                return _j.dumps(
+                    {
+                        "timestamp": self.formatTime(record),
+                        "level": record.levelname,
+                        "logger": record.name,
+                        "message": record.getMessage(),
+                    }
+                )
 
         handler.setFormatter(_JsonFmt())
         logger.addHandler(handler)

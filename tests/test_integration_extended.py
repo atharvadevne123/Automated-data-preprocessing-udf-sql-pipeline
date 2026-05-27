@@ -27,7 +27,7 @@ def medium_jsonl(tmp_path: Path) -> Path:
     f = tmp_path / "medium.jsonl"
     with open(f, "w") as fh:
         for i in range(100):
-            fh.write(json.dumps({"id": i, "v": i ** 2}) + "\n")
+            fh.write(json.dumps({"id": i, "v": i**2}) + "\n")
     return f
 
 
@@ -83,9 +83,7 @@ def test_cli_output_dir_nested_creation(medium_jsonl: Path, tmp_path: Path) -> N
 
 
 @pytest.mark.parametrize("prefix", ["r_", "data_", "review_", "yelp_chunk_"])
-def test_cli_output_prefix_applied_correctly(
-    medium_jsonl: Path, tmp_path: Path, prefix: str
-) -> None:
+def test_cli_output_prefix_applied_correctly(medium_jsonl: Path, tmp_path: Path, prefix: str) -> None:
     out_dir = tmp_path / f"prefix_{prefix}"
     result = run_cli(
         [

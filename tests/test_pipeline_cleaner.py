@@ -136,11 +136,14 @@ class TestTextCleanerRecord:
         cleaner.clean_record(record)
         assert "text" not in record
 
-    @pytest.mark.parametrize("text,expected_not_in", [
-        ("http://example.com great food", "http"),
-        ("<b>bold</b>", "<b>"),
-        ("too   many   spaces", "  "),
-    ])
+    @pytest.mark.parametrize(
+        "text,expected_not_in",
+        [
+            ("http://example.com great food", "http"),
+            ("<b>bold</b>", "<b>"),
+            ("too   many   spaces", "  "),
+        ],
+    )
     def test_clean_removes_expected_content(self, cleaner, text, expected_not_in):
         result = cleaner.clean(text)
         assert expected_not_in not in result

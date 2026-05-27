@@ -76,10 +76,13 @@ class TestRecordJoiner:
         joiner.load_lookup([{"business_id": "new_biz", "name": "New"}])
         assert joiner.lookup_size == 1
 
-    @pytest.mark.parametrize("biz_id,expected_name", [
-        ("biz1", "Café A"),
-        ("biz2", "Diner B"),
-    ])
+    @pytest.mark.parametrize(
+        "biz_id,expected_name",
+        [
+            ("biz1", "Café A"),
+            ("biz2", "Diner B"),
+        ],
+    )
     def test_parametrized_join(self, biz_id, expected_name):
         joiner = RecordJoiner(lookup_key="business_id")
         joiner.load_lookup(BUSINESSES)

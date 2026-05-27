@@ -12,12 +12,15 @@ def _review(business_id="b1", stars=3.0, useful=0, sentiment="neutral"):
 
 
 class TestAggregatorStarDistribution:
-    @pytest.mark.parametrize("star_values,expected_dist", [
-        ([1.0, 2.0, 3.0, 4.0, 5.0], {1: 1, 2: 1, 3: 1, 4: 1, 5: 1}),
-        ([5.0, 5.0, 5.0], {5: 3}),
-        ([1.0, 1.0, 1.0], {1: 3}),
-        ([3.7, 3.2, 3.5], {4: 2, 3: 1}),
-    ])
+    @pytest.mark.parametrize(
+        "star_values,expected_dist",
+        [
+            ([1.0, 2.0, 3.0, 4.0, 5.0], {1: 1, 2: 1, 3: 1, 4: 1, 5: 1}),
+            ([5.0, 5.0, 5.0], {5: 3}),
+            ([1.0, 1.0, 1.0], {1: 3}),
+            ([3.7, 3.2, 3.5], {4: 2, 3: 1}),
+        ],
+    )
     def test_star_distribution(self, star_values, expected_dist):
         agg = StatsAggregator()
         for s in star_values:
@@ -28,11 +31,14 @@ class TestAggregatorStarDistribution:
 
 
 class TestAggregatorSentimentCounts:
-    @pytest.mark.parametrize("labels,expected", [
-        (["positive"] * 5, {"positive": 5}),
-        (["negative"] * 3 + ["positive"] * 2, {"negative": 3, "positive": 2}),
-        (["neutral"] * 4, {"neutral": 4}),
-    ])
+    @pytest.mark.parametrize(
+        "labels,expected",
+        [
+            (["positive"] * 5, {"positive": 5}),
+            (["negative"] * 3 + ["positive"] * 2, {"negative": 3, "positive": 2}),
+            (["neutral"] * 4, {"neutral": 4}),
+        ],
+    )
     def test_sentiment_count(self, labels, expected):
         agg = StatsAggregator()
         for lbl in labels:

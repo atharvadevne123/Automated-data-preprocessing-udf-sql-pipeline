@@ -46,6 +46,7 @@ class TestMemoryMetrics:
 
     def test_snapshot_auto_starts_tracing(self):
         import tracemalloc
+
         tracemalloc.stop()
         m = MemoryMetrics.snapshot("auto_start")
         assert m.peak_bytes >= 0

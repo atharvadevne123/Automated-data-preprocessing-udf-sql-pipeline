@@ -101,6 +101,7 @@ def retry(
                     wait = current_delay
                     if jitter > 0:
                         import random
+
                         wait += random.uniform(0, jitter)
                     logger.warning(
                         "Attempt %d/%d failed for %s: %s — retrying in %.2fs",

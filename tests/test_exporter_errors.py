@@ -58,6 +58,7 @@ class TestExporterErrorHandling:
 
     def test_to_json_creates_valid_json(self, tmp_path):
         import json
+
         exporter = DataExporter()
         records = [{"a": 1, "b": "hello"}]
         out = tmp_path / "out.json"
@@ -65,11 +66,14 @@ class TestExporterErrorHandling:
         loaded = json.loads(out.read_text())
         assert loaded == records
 
-    @pytest.mark.parametrize("fmt,kwargs", [
-        ("jsonl", {}),
-        ("json", {}),
-        ("csv", {"fields": ["k"]}),
-    ])
+    @pytest.mark.parametrize(
+        "fmt,kwargs",
+        [
+            ("jsonl", {}),
+            ("json", {}),
+            ("csv", {"fields": ["k"]}),
+        ],
+    )
     def test_export_dispatch_parametrized(self, tmp_path, fmt, kwargs):
         exporter = DataExporter()
         records = [{"k": "v"}]

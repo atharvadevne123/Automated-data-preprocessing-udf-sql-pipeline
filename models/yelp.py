@@ -8,9 +8,11 @@ from typing import Any
 
 try:
     from pydantic import BaseModel, Field  # noqa: F401
+
     _PYDANTIC_V2 = True
 except ImportError:
     from pydantic import BaseModel, Field  # type: ignore[no-redef]
+
     _PYDANTIC_V2 = False
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -42,10 +44,7 @@ class YelpReview(BaseModel):
     date: str = Field(default="")
 
     def __repr__(self) -> str:
-        return (
-            f"YelpReview(review_id={self.review_id!r}, "
-            f"business_id={self.business_id!r}, stars={self.stars})"
-        )
+        return f"YelpReview(review_id={self.review_id!r}, business_id={self.business_id!r}, stars={self.stars})"
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "YelpReview":
@@ -54,7 +53,9 @@ class YelpReview(BaseModel):
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise this review to a JSON string."""
-        return json.dumps(self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False)
+        return json.dumps(
+            self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False
+        )
 
     def word_count(self) -> int:
         """Return the number of whitespace-separated words in the review text."""
@@ -105,14 +106,13 @@ class YelpBusiness(BaseModel):
     longitude: float | None = Field(default=None)
 
     def __repr__(self) -> str:
-        return (
-            f"YelpBusiness(business_id={self.business_id!r}, "
-            f"name={self.name!r}, stars={self.stars})"
-        )
+        return f"YelpBusiness(business_id={self.business_id!r}, name={self.name!r}, stars={self.stars})"
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise this business to a JSON string."""
-        return json.dumps(self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False)
+        return json.dumps(
+            self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False
+        )
 
     def category_list(self) -> list[str]:
         """Return categories split into a list, or empty list if None."""
@@ -153,14 +153,13 @@ class YelpUser(BaseModel):
     fans: int = Field(default=0, ge=0)
 
     def __repr__(self) -> str:
-        return (
-            f"YelpUser(user_id={self.user_id!r}, "
-            f"name={self.name!r}, review_count={self.review_count})"
-        )
+        return f"YelpUser(user_id={self.user_id!r}, name={self.name!r}, review_count={self.review_count})"
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise this user to a JSON string."""
-        return json.dumps(self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False)
+        return json.dumps(
+            self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False
+        )
 
     def total_votes_received(self) -> int:
         """Return the sum of useful + funny + cool votes received."""
@@ -193,7 +192,9 @@ class YelpCheckin(BaseModel):
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise this check-in record to a JSON string."""
-        return json.dumps(self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False)
+        return json.dumps(
+            self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False
+        )
 
 
 class YelpPhoto(BaseModel):
@@ -212,10 +213,7 @@ class YelpPhoto(BaseModel):
     label: str = Field(default="")
 
     def __repr__(self) -> str:
-        return (
-            f"YelpPhoto(photo_id={self.photo_id!r}, "
-            f"business_id={self.business_id!r}, label={self.label!r})"
-        )
+        return f"YelpPhoto(photo_id={self.photo_id!r}, business_id={self.business_id!r}, label={self.label!r})"
 
     def has_caption(self) -> bool:
         """Return True if the photo has a non-empty caption."""
@@ -223,4 +221,6 @@ class YelpPhoto(BaseModel):
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise this photo record to a JSON string."""
-        return json.dumps(self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False)
+        return json.dumps(
+            self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False
+        )

@@ -72,9 +72,7 @@ def test_get_connection_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.parametrize("missing_var", list(_FULL_ENV.keys()))
-def test_each_required_var_independently_missing(
-    monkeypatch: pytest.MonkeyPatch, missing_var: str
-) -> None:
+def test_each_required_var_independently_missing(monkeypatch: pytest.MonkeyPatch, missing_var: str) -> None:
     """Removing any single required var raises EnvironmentError naming it."""
     for var, val in _FULL_ENV.items():
         monkeypatch.setenv(var, val)

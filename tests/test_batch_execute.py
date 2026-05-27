@@ -57,9 +57,15 @@ class TestBatchExecute:
         with pytest.raises(RuntimeError, match="DB error"):
             batch_execute(conn, "INSERT INTO t VALUES (%s)", [(1,)], batch_size=10)
 
-    @pytest.mark.parametrize("batch_size,data_len", [
-        (1, 5), (3, 9), (10, 10), (100, 5),
-    ])
+    @pytest.mark.parametrize(
+        "batch_size,data_len",
+        [
+            (1, 5),
+            (3, 9),
+            (10, 10),
+            (100, 5),
+        ],
+    )
     def test_parametrized_batch_sizes(self, batch_size, data_len):
         # rowcount reflects actual rows per batch, not batch_size
         rows_per_batch = min(batch_size, data_len)

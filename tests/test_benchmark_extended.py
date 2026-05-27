@@ -43,9 +43,7 @@ def test_benchmark_split_mb_per_sec_nonnegative(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("records,chunks", [(10, 1), (30, 3), (100, 10)])
-def test_benchmark_split_chunk_count_correct(
-    tmp_path: Path, records: int, chunks: int
-) -> None:
+def test_benchmark_split_chunk_count_correct(tmp_path: Path, records: int, chunks: int) -> None:
     input_file = tmp_path / f"in_{records}.jsonl"
     generate_synthetic_jsonl(input_file, records)
     metrics = benchmark_split(input_file, chunks, tmp_path / f"out_{records}")

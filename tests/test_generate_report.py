@@ -33,6 +33,7 @@ def sample_jsonl(tmp_path):
 class TestAggregateJsonl:
     def test_returns_stats_aggregator(self, sample_jsonl):
         from pipeline.aggregator import StatsAggregator
+
         agg = aggregate_jsonl(sample_jsonl)
         assert isinstance(agg, StatsAggregator)
 

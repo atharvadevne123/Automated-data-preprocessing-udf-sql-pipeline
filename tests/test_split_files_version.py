@@ -45,14 +45,15 @@ def test_get_file_size_mb_empty_file(tmp_path: Path) -> None:
     assert get_file_size_mb(f) == 0.0
 
 
-@pytest.mark.parametrize("bytes_,expected_mb", [
-    (0, 0.0),
-    (512 * 1024, 0.5),
-    (2 * 1024 * 1024, 2.0),
-])
-def test_get_file_size_mb_various_sizes(
-    tmp_path: Path, bytes_: int, expected_mb: float
-) -> None:
+@pytest.mark.parametrize(
+    "bytes_,expected_mb",
+    [
+        (0, 0.0),
+        (512 * 1024, 0.5),
+        (2 * 1024 * 1024, 2.0),
+    ],
+)
+def test_get_file_size_mb_various_sizes(tmp_path: Path, bytes_: int, expected_mb: float) -> None:
     f = tmp_path / "sized.bin"
     f.write_bytes(b"x" * bytes_)
     assert get_file_size_mb(f) == pytest.approx(expected_mb, abs=0.001)

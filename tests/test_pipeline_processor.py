@@ -48,9 +48,7 @@ class TestRecordProcessorFilters:
         assert p.process_record({"stars": 2}) is None
 
     def test_multiple_filters_all_must_pass(self):
-        p = RecordProcessor(
-            filters=[lambda r: r["stars"] >= 3, lambda r: r.get("useful", 0) > 0]
-        )
+        p = RecordProcessor(filters=[lambda r: r["stars"] >= 3, lambda r: r.get("useful", 0) > 0])
         assert p.process_record({"stars": 4, "useful": 1}) is not None
         assert p.process_record({"stars": 4, "useful": 0}) is None
 

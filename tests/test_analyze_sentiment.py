@@ -19,11 +19,14 @@ def _write_jsonl(path: Path, records: list[dict]) -> None:
 @pytest.fixture
 def sample_jsonl(tmp_path):
     path = tmp_path / "reviews.jsonl"
-    _write_jsonl(path, [
-        {"review_id": "r1", "text": "Great food!", "stars": 5},
-        {"review_id": "r2", "text": "Terrible service", "stars": 1},
-        {"review_id": "r3", "text": "It was okay", "stars": 3},
-    ])
+    _write_jsonl(
+        path,
+        [
+            {"review_id": "r1", "text": "Great food!", "stars": 5},
+            {"review_id": "r2", "text": "Terrible service", "stars": 1},
+            {"review_id": "r3", "text": "It was okay", "stars": 3},
+        ],
+    )
     return path
 
 

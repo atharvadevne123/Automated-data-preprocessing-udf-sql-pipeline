@@ -60,6 +60,7 @@ class SentimentAnalyzer:
     def _check_textblob() -> bool:
         try:
             import textblob  # noqa: F401
+
             return True
         except ImportError:
             logger.warning("textblob not installed — sentiment analysis will return neutral.")
@@ -85,6 +86,7 @@ class SentimentAnalyzer:
             return SentimentResult(text=text, polarity=0.0, subjectivity=0.0, label="neutral")
         try:
             from textblob import TextBlob
+
             blob = TextBlob(text)
             polarity = float(blob.sentiment.polarity)
             subjectivity = float(blob.sentiment.subjectivity)

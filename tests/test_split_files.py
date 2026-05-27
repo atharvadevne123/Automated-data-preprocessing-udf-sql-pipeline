@@ -125,9 +125,7 @@ def test_split_output_dir_creates_directory(sample_json_file: Path, tmp_path: Pa
     assert sum(_line_count(str(c)) for c in chunks) == 25
 
 
-def test_split_output_dir_combined_with_prefix(
-    sample_json_file: Path, tmp_path: Path
-) -> None:
+def test_split_output_dir_combined_with_prefix(sample_json_file: Path, tmp_path: Path) -> None:
     """--output-dir and --output-prefix work together correctly."""
     out_dir = tmp_path / "out"
     result = subprocess.run(
@@ -212,9 +210,7 @@ def test_main_default_prefix(sample_json_file: Path, tmp_path: Path) -> None:
         (25, 25),
     ],
 )
-def test_split_file_chunk_counts(
-    sample_json_file: Path, tmp_path: Path, num_files: int, expected_chunks: int
-) -> None:
+def test_split_file_chunk_counts(sample_json_file: Path, tmp_path: Path, num_files: int, expected_chunks: int) -> None:
     prefix = str(tmp_path / f"p{num_files}_")
     outputs = split_file(sample_json_file, prefix, num_files)
     assert len(outputs) == expected_chunks
@@ -222,9 +218,7 @@ def test_split_file_chunk_counts(
 
 
 @pytest.mark.parametrize("prefix", ["out_", "chunk_", "part_", "file-", "x"])
-def test_split_file_custom_prefixes(
-    sample_json_file: Path, tmp_path: Path, prefix: str
-) -> None:
+def test_split_file_custom_prefixes(sample_json_file: Path, tmp_path: Path, prefix: str) -> None:
     full_prefix = str(tmp_path / prefix)
     outputs = split_file(sample_json_file, full_prefix, 3)
     assert len(outputs) == 3
@@ -233,9 +227,7 @@ def test_split_file_custom_prefixes(
 
 
 @pytest.mark.parametrize("bad_num", [-1, 0, -100])
-def test_split_file_rejects_invalid_num_files(
-    sample_json_file: Path, tmp_path: Path, bad_num: int
-) -> None:
+def test_split_file_rejects_invalid_num_files(sample_json_file: Path, tmp_path: Path, bad_num: int) -> None:
     with pytest.raises(ValueError):
         split_file(sample_json_file, str(tmp_path / "out_"), bad_num)
 
@@ -262,9 +254,18 @@ class TestDryRunFlag:
         from split_files import main
 
         output_prefix = str(tmp_path / "dry_")
-        with patch("sys.argv", ["split_files.py", str(sample_json_file),
-                                "--output-prefix", output_prefix, "--num-files", "5",
-                                "--dry-run"]):
+        with patch(
+            "sys.argv",
+            [
+                "split_files.py",
+                str(sample_json_file),
+                "--output-prefix",
+                output_prefix,
+                "--num-files",
+                "5",
+                "--dry-run",
+            ],
+        ):
             main()
         written = list(tmp_path.glob("dry_*.json"))
         assert len(written) == 0
@@ -274,8 +275,7 @@ class TestDryRunFlag:
 
         from split_files import main
 
-        with patch("sys.argv", ["split_files.py", str(sample_json_file),
-                                "--num-files", "5", "--dry-run"]):
+        with patch("sys.argv", ["split_files.py", str(sample_json_file), "--num-files", "5", "--dry-run"]):
             with caplog.at_level(logging.INFO):
                 main()
         assert any("[DRY RUN]" in m for m in caplog.messages)
@@ -283,8 +283,7 @@ class TestDryRunFlag:
     def test_dry_run_missing_file_exits(self, tmp_path):
         from split_files import main
 
-        with patch("sys.argv", ["split_files.py", str(tmp_path / "ghost.json"),
-                                "--dry-run"]):
+        with patch("sys.argv", ["split_files.py", str(tmp_path / "ghost.json"), "--dry-run"]):
             with pytest.raises(SystemExit):
                 main()
 
@@ -293,8 +292,17 @@ class TestDryRunFlag:
         from split_files import main
 
         out_prefix = str(tmp_path / "dry_chunk_")
-        with patch("sys.argv", ["split_files.py", str(sample_json_file),
-                                "--output-prefix", out_prefix,
-                                "--num-files", str(num_chunks), "--dry-run"]):
+        with patch(
+            "sys.argv",
+            [
+                "split_files.py",
+                str(sample_json_file),
+                "--output-prefix",
+                out_prefix,
+                "--num-files",
+                str(num_chunks),
+                "--dry-run",
+            ],
+        ):
             main()
         assert len(list(tmp_path.glob("dry_chunk_*.json"))) == 0

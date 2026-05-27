@@ -32,6 +32,7 @@ class MemoryMetrics:
     def start_tracing() -> None:
         """Start or reset tracemalloc tracing."""
         import tracemalloc
+
         if not tracemalloc.is_tracing():
             tracemalloc.start()
         else:
@@ -48,6 +49,7 @@ class MemoryMetrics:
             MemoryMetrics with current and peak byte counts.
         """
         import tracemalloc
+
         if not tracemalloc.is_tracing():
             tracemalloc.start()
         current, peak = tracemalloc.get_traced_memory()

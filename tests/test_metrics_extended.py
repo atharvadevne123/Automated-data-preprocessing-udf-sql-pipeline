@@ -39,9 +39,7 @@ def test_split_metrics_input_file_preserved() -> None:
         (100, 0.5, 200.0),
     ],
 )
-def test_split_metrics_lines_per_second_parametrized(
-    total: int, elapsed: float, expected_rate: float
-) -> None:
+def test_split_metrics_lines_per_second_parametrized(total: int, elapsed: float, expected_rate: float) -> None:
     m = SplitMetrics(input_file="f.jsonl", total_lines=total, elapsed_sec=elapsed)
     assert m.lines_per_second == pytest.approx(expected_rate)
 

@@ -73,12 +73,14 @@ class TestRetryDecorator:
 
     def test_invalid_max_attempts_raises(self):
         with pytest.raises(ValueError):
+
             @retry(max_attempts=0, delay=0)
             def f():
                 pass
 
     def test_invalid_delay_raises(self):
         with pytest.raises(ValueError):
+
             @retry(delay=-1)
             def f():
                 pass
@@ -122,9 +124,7 @@ class TestRetryOnError:
                 raise IOError("temporary")
             return x * 2
 
-        result = retry_on_error(
-            sometimes_fails, 5, exceptions=(IOError,), max_attempts=3, delay=0
-        )
+        result = retry_on_error(sometimes_fails, 5, exceptions=(IOError,), max_attempts=3, delay=0)
         assert result == 10
 
     def test_raises_after_exhaustion(self):

@@ -155,6 +155,7 @@ def validate_email(email: str) -> str:
         ValidationError: if *email* does not match the expected pattern.
     """
     import re
+
     _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
     cleaned = (email or "").strip()
     if not cleaned or not _EMAIL_RE.match(cleaned):
@@ -197,6 +198,7 @@ def validate_date_format(date_str: str) -> str:
         ValidationError: if the string does not match YYYY-MM-DD.
     """
     import re
+
     _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
     if not isinstance(date_str, str) or not _DATE_RE.match(date_str):
         raise ValidationError(f"Date must be YYYY-MM-DD, got: {date_str!r}")
@@ -264,13 +266,9 @@ def validate_text_length(text: str, min_length: int = 1, max_length: int = 10_00
         raise ValidationError(f"Expected str, got {type(text).__name__}")
     length = len(text)
     if length < min_length:
-        raise ValidationError(
-            f"Text is too short: {length} < {min_length} characters"
-        )
+        raise ValidationError(f"Text is too short: {length} < {min_length} characters")
     if length > max_length:
-        raise ValidationError(
-            f"Text is too long: {length} > {max_length} characters"
-        )
+        raise ValidationError(f"Text is too long: {length} > {max_length} characters")
     return text
 
 

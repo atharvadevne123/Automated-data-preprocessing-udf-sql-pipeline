@@ -21,11 +21,13 @@ def _make_jsonl(records: list[dict]) -> Path:
 
 class TestComplexFilterChains:
     def test_chained_filters_all_required(self):
-        p = RecordProcessor(filters=[
-            lambda r: r.get("stars", 0) >= 3,
-            lambda r: len(r.get("text", "")) >= 5,
-            lambda r: r.get("useful", 0) >= 1,
-        ])
+        p = RecordProcessor(
+            filters=[
+                lambda r: r.get("stars", 0) >= 3,
+                lambda r: len(r.get("text", "")) >= 5,
+                lambda r: r.get("useful", 0) >= 1,
+            ]
+        )
         records = [
             {"stars": 4, "text": "great", "useful": 2},
             {"stars": 4, "text": "great", "useful": 0},
@@ -35,9 +37,7 @@ class TestComplexFilterChains:
         result = list(p.process_records(iter(records)))
         assert len(result) == 1
 
-    @pytest.mark.parametrize("stars_min,expected", [
-        (1, 5), (2, 4), (3, 3), (4, 2), (5, 1), (6, 0)
-    ])
+    @pytest.mark.parametrize("stars_min,expected", [(1, 5), (2, 4), (3, 3), (4, 2), (5, 1), (6, 0)])
     def test_star_filter_counts(self, stars_min, expected):
         records = [{"stars": i} for i in range(1, 6)]
         p = RecordProcessor(filters=[lambda r, m=stars_min: r["stars"] >= m])
@@ -47,10 +47,12 @@ class TestComplexFilterChains:
 
 class TestTransformChains:
     def test_add_metadata_transform(self):
-        p = RecordProcessor(transforms=[
-            lambda r: {**r, "processed_at": "2026-01-01"},
-            lambda r: {**r, "word_count": len(r.get("text", "").split())},
-        ])
+        p = RecordProcessor(
+            transforms=[
+                lambda r: {**r, "processed_at": "2026-01-01"},
+                lambda r: {**r, "word_count": len(r.get("text", "").split())},
+            ]
+        )
         record = {"text": "great food here"}
         result = p.process_record(record)
         assert result["processed_at"] == "2026-01-01"
@@ -62,10 +64,12 @@ class TestTransformChains:
         assert result["stars_norm"] == pytest.approx(1.0)
 
     def test_transforms_see_previous_output(self):
-        p = RecordProcessor(transforms=[
-            lambda r: {**r, "x": 10},
-            lambda r: {**r, "y": r["x"] * 2},
-        ])
+        p = RecordProcessor(
+            transforms=[
+                lambda r: {**r, "x": 10},
+                lambda r: {**r, "y": r["x"] * 2},
+            ]
+        )
         result = p.process_record({})
         assert result["x"] == 10
         assert result["y"] == 20
@@ -93,7 +97,7 @@ class TestProcessFileEdgeCases:
     def test_blank_lines_skipped(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
             f.write('{"id": 1}\n')
-            f.write('\n')
+            f.write("\n")
             f.write('{"id": 2}\n')
             path = Path(f.name)
         p = RecordProcessor()

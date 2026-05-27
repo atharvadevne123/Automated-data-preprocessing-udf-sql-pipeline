@@ -144,9 +144,7 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
                 # Last chunk absorbs any remainder so no lines are dropped
                 chunk_size = lines_per_file + (remainder if i == num_files - 1 else 0)
                 try:
-                    written, global_written = _write_chunk(
-                        f, output_filename, chunk_size, total_lines, global_written
-                    )
+                    written, global_written = _write_chunk(f, output_filename, chunk_size, total_lines, global_written)
                     output_files.append(output_filename)
                     chunk_size_mb = get_file_size_mb(Path(output_filename))
                     logger.info(
@@ -240,9 +238,7 @@ def estimate_chunks_for_size(input_file: Path, target_size_mb: float) -> int:
 
 def main() -> None:
     """CLI entry point for splitting large JSONL files."""
-    parser = argparse.ArgumentParser(
-        description="Split a large newline-delimited JSON file into smaller chunks."
-    )
+    parser = argparse.ArgumentParser(description="Split a large newline-delimited JSON file into smaller chunks.")
     parser.add_argument(
         "input_file",
         type=Path,

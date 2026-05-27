@@ -61,11 +61,13 @@ class TestFilterBusinesses:
 class TestMedianStars:
     def test_median_with_data(self):
         agg = StatsAggregator()
-        agg.add_batch([
-            {"stars": 1, "sentiment_label": "negative"},
-            {"stars": 3, "sentiment_label": "neutral"},
-            {"stars": 5, "sentiment_label": "positive"},
-        ])
+        agg.add_batch(
+            [
+                {"stars": 1, "sentiment_label": "negative"},
+                {"stars": 3, "sentiment_label": "neutral"},
+                {"stars": 5, "sentiment_label": "positive"},
+            ]
+        )
         assert agg.median_stars() == 3.0
 
     def test_median_empty(self):
@@ -74,10 +76,12 @@ class TestMedianStars:
 
     def test_median_even_count(self):
         agg = StatsAggregator()
-        agg.add_batch([
-            {"stars": 2, "sentiment_label": "negative"},
-            {"stars": 4, "sentiment_label": "positive"},
-        ])
+        agg.add_batch(
+            [
+                {"stars": 2, "sentiment_label": "negative"},
+                {"stars": 4, "sentiment_label": "positive"},
+            ]
+        )
         assert agg.median_stars() == pytest.approx(3.0)
 
     def test_median_all_same(self):
@@ -99,8 +103,10 @@ class TestMeanStars:
 
     def test_mean_mixed(self):
         agg = StatsAggregator()
-        agg.add_batch([
-            {"stars": 2, "sentiment_label": "negative"},
-            {"stars": 4, "sentiment_label": "positive"},
-        ])
+        agg.add_batch(
+            [
+                {"stars": 2, "sentiment_label": "negative"},
+                {"stars": 4, "sentiment_label": "positive"},
+            ]
+        )
         assert agg.mean_stars() == pytest.approx(3.0)

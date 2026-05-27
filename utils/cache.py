@@ -124,6 +124,7 @@ class DictCache:
 
     def __init__(self, ttl: float | None = None, maxsize: int | None = None) -> None:
         import time as _time
+
         self._ttl = ttl
         self._maxsize = maxsize
         self._store: dict[Any, tuple[Any, float]] = {}
@@ -182,6 +183,7 @@ def cached(maxsize: int | None = 128) -> Callable:
         parse_record('{"a":1}')
         print(parse_record.cache.stats.hit_rate)
     """
+
     def decorator(func: Callable) -> Callable:
         lru = LRUCache(func, maxsize=maxsize)
 

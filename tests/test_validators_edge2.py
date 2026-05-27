@@ -13,13 +13,16 @@ from utils.validators import (
 
 
 class TestValidateStarRating:
-    @pytest.mark.parametrize("val,expected", [
-        (1, 1.0),
-        (5, 5.0),
-        (3.5, 3.5),
-        ("4", 4.0),
-        ("2.5", 2.5),
-    ])
+    @pytest.mark.parametrize(
+        "val,expected",
+        [
+            (1, 1.0),
+            (5, 5.0),
+            (3.5, 3.5),
+            ("4", 4.0),
+            ("2.5", 2.5),
+        ],
+    )
     def test_valid_values(self, val, expected):
         assert validate_star_rating(val) == expected
 
@@ -28,30 +31,39 @@ class TestValidateStarRating:
         with pytest.raises((ValueError, TypeError)):
             validate_star_rating(val)
 
-    @pytest.mark.parametrize("boundary,expected", [
-        (1.0, 1.0),
-        (5.0, 5.0),
-    ])
+    @pytest.mark.parametrize(
+        "boundary,expected",
+        [
+            (1.0, 1.0),
+            (5.0, 5.0),
+        ],
+    )
     def test_boundary_values_accepted(self, boundary, expected):
         assert validate_star_rating(boundary) == expected
 
 
 class TestValidateEmail:
-    @pytest.mark.parametrize("email", [
-        "user@example.com",
-        "a.b+c@sub.domain.org",
-        "test123@test.co.uk",
-    ])
+    @pytest.mark.parametrize(
+        "email",
+        [
+            "user@example.com",
+            "a.b+c@sub.domain.org",
+            "test123@test.co.uk",
+        ],
+    )
     def test_valid_emails(self, email):
         assert validate_email(email) == email
 
-    @pytest.mark.parametrize("bad_email", [
-        "not-an-email",
-        "@nodomain.com",
-        "missing@",
-        "",
-        "spaces in@email.com",
-    ])
+    @pytest.mark.parametrize(
+        "bad_email",
+        [
+            "not-an-email",
+            "@nodomain.com",
+            "missing@",
+            "",
+            "spaces in@email.com",
+        ],
+    )
     def test_invalid_emails_raise(self, bad_email):
         with pytest.raises(ValueError):
             validate_email(bad_email)

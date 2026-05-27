@@ -85,9 +85,7 @@ def test_output_ordering_preserved(tiny_jsonl: Path, tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("num_chunks", [1, 2, 5, 10, 25])
-def test_total_records_stable_across_chunk_counts(
-    sample_jsonl: Path, tmp_path: Path, num_chunks: int
-) -> None:
+def test_total_records_stable_across_chunk_counts(sample_jsonl: Path, tmp_path: Path, num_chunks: int) -> None:
     prefix = str(tmp_path / f"c{num_chunks}_")
     outputs = split_file(sample_jsonl, prefix, num_chunks)
     records = _read_all_records(outputs)

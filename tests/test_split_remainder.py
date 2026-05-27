@@ -23,15 +23,13 @@ def _line_count(path: str | Path) -> int:
 @pytest.mark.parametrize(
     "total,chunks,expected_last",
     [
-        (10, 3, 4),   # 10 / 3 = 3 r 1; last gets 3 + 1 = 4
-        (11, 4, 5),   # 11 / 4 = 2 r 3; last gets 2 + 3 = 5
-        (7, 3, 3),    # 7 / 3 = 2 r 1; last gets 2 + 1 = 3
-        (25, 4, 7),   # 25 / 4 = 6 r 1; last gets 6 + 1 = 7
+        (10, 3, 4),  # 10 / 3 = 3 r 1; last gets 3 + 1 = 4
+        (11, 4, 5),  # 11 / 4 = 2 r 3; last gets 2 + 3 = 5
+        (7, 3, 3),  # 7 / 3 = 2 r 1; last gets 2 + 1 = 3
+        (25, 4, 7),  # 25 / 4 = 6 r 1; last gets 6 + 1 = 7
     ],
 )
-def test_last_chunk_gets_remainder(
-    tmp_path: Path, total: int, chunks: int, expected_last: int
-) -> None:
+def test_last_chunk_gets_remainder(tmp_path: Path, total: int, chunks: int, expected_last: int) -> None:
     f = tmp_path / f"r_{total}_{chunks}.jsonl"
     _write_jsonl(f, total)
     outputs = split_file(f, str(tmp_path / "out_"), chunks)

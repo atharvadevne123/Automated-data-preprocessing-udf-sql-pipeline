@@ -41,19 +41,25 @@ class TestValidateTextLength:
         with pytest.raises(ValidationError):
             validate_text_length(None)  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("text,min_l,max_l", [
-        ("hello world", 1, 100),
-        ("x", 1, 1),
-        ("ab", 2, 5),
-    ])
+    @pytest.mark.parametrize(
+        "text,min_l,max_l",
+        [
+            ("hello world", 1, 100),
+            ("x", 1, 1),
+            ("ab", 2, 5),
+        ],
+    )
     def test_parametrized_valid(self, text, min_l, max_l):
         assert validate_text_length(text, min_length=min_l, max_length=max_l) == text
 
-    @pytest.mark.parametrize("text,min_l,max_l", [
-        ("", 1, 100),
-        ("abc", 5, 10),
-        ("a" * 200, 1, 100),
-    ])
+    @pytest.mark.parametrize(
+        "text,min_l,max_l",
+        [
+            ("", 1, 100),
+            ("abc", 5, 10),
+            ("a" * 200, 1, 100),
+        ],
+    )
     def test_parametrized_invalid(self, text, min_l, max_l):
         with pytest.raises(ValidationError):
             validate_text_length(text, min_length=min_l, max_length=max_l)

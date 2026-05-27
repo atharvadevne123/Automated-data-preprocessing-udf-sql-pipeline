@@ -92,7 +92,9 @@ def main() -> None:
     )
     parser.add_argument("input", type=Path, help="Source JSONL file.")
     parser.add_argument("--output", type=Path, default=Path("output"), help="Output directory (default: output/).")
-    parser.add_argument("--format", choices=["jsonl", "json", "csv"], default="jsonl", help="Export format (default: jsonl).")
+    parser.add_argument(
+        "--format", choices=["jsonl", "json", "csv"], default="jsonl", help="Export format (default: jsonl)."
+    )
     parser.add_argument("--sample-rate", type=float, default=1.0, help="Fraction of records to process (default: 1.0).")
     parser.add_argument("--min-stars", type=float, default=None, help="Minimum star rating filter.")
     parser.add_argument("--max-records", type=int, default=None, help="Stop after this many output records.")

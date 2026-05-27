@@ -13,8 +13,14 @@ from scripts.run_pipeline import run_pipeline
 @pytest.fixture
 def sample_jsonl(tmp_path) -> Path:
     data = [
-        {"review_id": f"r{i}", "user_id": "u1", "business_id": "b1",
-         "stars": (i % 5) + 1, "text": f"Review number {i}", "date": "2023-01-01"}
+        {
+            "review_id": f"r{i}",
+            "user_id": "u1",
+            "business_id": "b1",
+            "stars": (i % 5) + 1,
+            "text": f"Review number {i}",
+            "date": "2023-01-01",
+        }
         for i in range(10)
     ]
     f = tmp_path / "reviews.jsonl"

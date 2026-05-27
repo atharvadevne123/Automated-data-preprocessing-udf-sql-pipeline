@@ -42,9 +42,7 @@ def test_large_jsonl_no_duplicates(large_jsonl: Path, tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("chunks", [1, 4, 10, 20, 50, 100])
-def test_large_jsonl_various_chunk_counts(
-    large_jsonl: Path, tmp_path: Path, chunks: int
-) -> None:
+def test_large_jsonl_various_chunk_counts(large_jsonl: Path, tmp_path: Path, chunks: int) -> None:
     outputs = split_file(large_jsonl, str(tmp_path / f"c{chunks}_"), chunks)
     assert sum(_line_count(o) for o in outputs) == 100
     assert len(outputs) == chunks

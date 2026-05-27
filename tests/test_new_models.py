@@ -56,9 +56,14 @@ class TestYelpReviewEnhancements:
         r = self.make_review(date="June 15 2023")
         assert r.date_is_valid() is False
 
-    @pytest.mark.parametrize("text,expected", [
-        ("one", 1), ("one two three", 3), ("", 0),
-    ])
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("one", 1),
+            ("one two three", 3),
+            ("", 0),
+        ],
+    )
     def test_word_count_parametrized(self, text, expected):
         r = self.make_review(text=text)
         assert r.word_count() == expected

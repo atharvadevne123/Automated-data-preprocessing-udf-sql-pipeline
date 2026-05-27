@@ -20,10 +20,13 @@ class TestUnicodeNormalization:
         result = c.clean(ligature)
         assert "ﬁ" in result
 
-    @pytest.mark.parametrize("char,expected_substr", [
-        ("é", "e"),   # é -> e after NFKC + lower
-        ("…", "..."), # ellipsis -> three dots
-    ])
+    @pytest.mark.parametrize(
+        "char,expected_substr",
+        [
+            ("é", "e"),  # é -> e after NFKC + lower
+            ("…", "..."),  # ellipsis -> three dots
+        ],
+    )
     def test_unicode_chars(self, char, expected_substr):
         c = TextCleaner(normalize_unicode=True, lowercase=True)
         result = c.clean(char)
@@ -58,8 +61,14 @@ class TestWhitespaceEdgeCases:
         assert result == "a b"
 
     def test_collapse_disabled_preserves_spaces(self):
-        c = TextCleaner(collapse_whitespace=False, strip_urls=False, strip_html=False,
-                        normalize_unicode=False, lowercase=False, collapse_punctuation=False)
+        c = TextCleaner(
+            collapse_whitespace=False,
+            strip_urls=False,
+            strip_html=False,
+            normalize_unicode=False,
+            lowercase=False,
+            collapse_punctuation=False,
+        )
         result = c.clean("a   b")
         assert "   " in result
 
@@ -67,10 +76,15 @@ class TestWhitespaceEdgeCases:
 class TestMaxLengthEdgeCases:
     @pytest.mark.parametrize("length", [1, 5, 10, 100])
     def test_truncation_exact(self, length):
-        c = TextCleaner(max_length=length, collapse_whitespace=False,
-                        strip_urls=False, strip_html=False,
-                        normalize_unicode=False, lowercase=False,
-                        collapse_punctuation=False)
+        c = TextCleaner(
+            max_length=length,
+            collapse_whitespace=False,
+            strip_urls=False,
+            strip_html=False,
+            normalize_unicode=False,
+            lowercase=False,
+            collapse_punctuation=False,
+        )
         text = "a" * (length + 50)
         result = c.clean(text)
         assert len(result) == length

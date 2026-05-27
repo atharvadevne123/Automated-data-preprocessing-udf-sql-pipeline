@@ -13,10 +13,7 @@ from scripts.analyze_sentiment import analyze_file, main
 @pytest.fixture
 def sample_jsonl(tmp_path: Path) -> Path:
     filepath = tmp_path / "reviews.jsonl"
-    records = [
-        {"text": "This is absolutely wonderful!", "id": i}
-        for i in range(5)
-    ]
+    records = [{"text": "This is absolutely wonderful!", "id": i} for i in range(5)]
     filepath.write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
     return filepath
 
