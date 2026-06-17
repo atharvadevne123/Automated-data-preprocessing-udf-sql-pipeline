@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from scripts.deduplicate import main, parse_args
 
 
@@ -55,7 +53,7 @@ class TestMain:
         out = tmp_path / "output.jsonl"
         code = main([str(inp), str(out), "--key-fields", "id"])
         assert code == 0
-        lines = [l for l in out.read_text().strip().split("\n") if l]
+        lines = [ln for ln in out.read_text().strip().split("\n") if ln]
         assert len(lines) == 2
 
     def test_missing_input_returns_1(self, tmp_path: Path) -> None:

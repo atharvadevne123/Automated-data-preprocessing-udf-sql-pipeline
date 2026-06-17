@@ -53,7 +53,7 @@ class TestMain:
         code = main([str(inp), str(out), "--field", "stars"])
         assert code == 0
         for f in out.glob("*.jsonl"):
-            lines = [json.loads(l) for l in f.read_text().strip().split("\n") if l]
+            lines = [json.loads(ln) for ln in f.read_text().strip().split("\n") if ln]
             assert len(lines) >= 1
 
     def test_missing_input_returns_1(self, tmp_path: Path) -> None:

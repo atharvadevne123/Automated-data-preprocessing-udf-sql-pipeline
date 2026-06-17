@@ -4,9 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 from scripts.run_pipeline import run_pipeline
 

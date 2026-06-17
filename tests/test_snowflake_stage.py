@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, call, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from snowflake_connector import copy_into_stage, list_stage_files
 
