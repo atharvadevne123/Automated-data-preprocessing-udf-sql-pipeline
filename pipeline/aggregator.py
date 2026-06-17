@@ -245,6 +245,54 @@ class StatsAggregator:
             else:
                 self._businesses[bid] = bstats
 
+    def percentile_stars(self, p: float) -> float:
+        """Return the *p*-th percentile star rating across all processed records.
+
+        Args:
+            p: Percentile in [0, 100].
+
+        Returns:
+            Percentile value, or 0.0 if no records have been added.
+
+        Raises:
+            ValueError: If *p* is not in [0, 100].
+        """
+        if not (0.0 <= p <= 100.0):
+            raise ValueError(f"percentile p must be in [0, 100], got {p}")
+        dist = self._global.star_distribution
+        if not dist:
+            return 0.0
+        stars_list: list[float] = []
+        for star, count in dist.items():
+            stars_list.extend([float(star)] * count)
+        stars_list.sort()
+        n = len(stars_list)
+        if n == 0:
+            return 0.0
+        idx = (p / 100.0) * (n - 1)
+        lo = int(idx)
+        hi = min(lo + 1, n - 1)
+        frac = idx - lo
+        return stars_list[lo] * (1 - frac) + stars_list[hi] * frac
+
+    def stddev_stars(self) -> float:
+        """Return the population standard deviation of star ratings.
+
+        Returns:
+            Standard deviation, or 0.0 if fewer than 2 records have been added.
+        """
+        dist = self._global.star_distribution
+        if not dist:
+            return 0.0
+        total_count = sum(dist.values())
+        if total_count < 2:
+            return 0.0
+        mean = self.mean_stars()
+        variance = sum(
+            count * (float(star) - mean) ** 2 for star, count in dist.items()
+        ) / total_count
+        return variance**0.5
+
     def reset(self) -> None:
         """Clear all accumulated state."""
         self._businesses.clear()
