@@ -104,6 +104,61 @@ class RecordJoiner:
         """
         return [r for r in records if r.get(self._main_key) not in self._index]
 
+    def inner_join(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Return only records that have a matching lookup entry (inner join).
+
+        Args:
+            records: Main records to filter and enrich.
+
+        Returns:
+            Enriched records where a lookup match exists.
+        """
+        result = []
+        for record in records:
+            key = record.get(self._main_key)
+            if key in self._index:
+                result.append(self.join_record(record))
+        logger.info(
+            "RecordJoiner.inner_join: %d/%d records matched.",
+            len(result),
+            len(records),
+        )
+        return result
+
+    def right_join(
+        self,
+        records: list[dict[str, Any]],
+        fill_value: Any = None,
+    ) -> list[dict[str, Any]]:
+        """Return all lookup entries, enriched with matching main records.
+
+        Lookup entries with no matching main record are returned with main
+        fields set to *fill_value*.
+
+        Args:
+            records: Main records used to enrich lookup entries.
+            fill_value: Value for fields absent in the lookup side.
+
+        Returns:
+            List of merged dicts, one per lookup entry.
+        """
+        main_index: dict[Any, dict[str, Any]] = {}
+        for record in records:
+            key = record.get(self._main_key)
+            if key is not None:
+                main_index[key] = record
+
+        result = []
+        for key, lookup_entry in self._index.items():
+            main_entry = main_index.get(key, {})
+            merged = dict(lookup_entry)
+            for field, value in main_entry.items():
+                if field not in merged:
+                    merged[field] = value
+            result.append(merged)
+        logger.info("RecordJoiner.right_join: %d lookup entries returned.", len(result))
+        return result
+
     @property
     def lookup_size(self) -> int:
         """Number of entries in the lookup index."""
