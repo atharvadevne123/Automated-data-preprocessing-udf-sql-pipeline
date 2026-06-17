@@ -223,3 +223,77 @@ class PipelineRunMetrics:
             "drop_rate": round(self.drop_rate, 4),
             "validation": self.validation.to_dict(),
         }
+
+
+class TimeSeries:
+    """Collect timestamped float observations and compute rolling statistics.
+
+    Args:
+        name: Label for this time series.
+        max_points: Maximum number of observations to retain.  Oldest are
+            dropped when the limit is reached (default 1000).
+
+    Example::
+
+        ts = TimeSeries("latency_ms")
+        ts.record(12.4)
+        ts.record(18.1)
+        print(ts.mean())   # 15.25
+    """
+
+    def __init__(self, name: str, max_points: int = 1000) -> None:
+        import time as _time
+
+        self.name = name
+        self._max = max_points
+        self._values: list[float] = []
+        self._timestamps: list[float] = []
+        self._time = _time
+
+    def record(self, value: float) -> None:
+        """Append a new observation.
+
+        Args:
+            value: Numeric observation to record.
+        """
+        if len(self._values) >= self._max:
+            self._values.pop(0)
+            self._timestamps.pop(0)
+        self._values.append(float(value))
+        self._timestamps.append(self._time.time())
+
+    def mean(self) -> float:
+        """Return the arithmetic mean of all recorded values, or 0.0."""
+        return sum(self._values) / len(self._values) if self._values else 0.0
+
+    def min(self) -> float:
+        """Return the minimum recorded value, or 0.0."""
+        return min(self._values) if self._values else 0.0
+
+    def max(self) -> float:
+        """Return the maximum recorded value, or 0.0."""
+        return max(self._values) if self._values else 0.0
+
+    def count(self) -> int:
+        """Return the number of recorded observations."""
+        return len(self._values)
+
+    def last(self) -> float | None:
+        """Return the most recent observation, or None."""
+        return self._values[-1] if self._values else None
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable summary."""
+        return {
+            "name": self.name,
+            "count": self.count(),
+            "mean": round(self.mean(), 4),
+            "min": self.min(),
+            "max": self.max(),
+            "last": self.last(),
+        }
+
+    def reset(self) -> None:
+        """Clear all recorded values."""
+        self._values.clear()
+        self._timestamps.clear()
