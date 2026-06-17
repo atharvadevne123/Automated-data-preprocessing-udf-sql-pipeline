@@ -87,7 +87,7 @@ def _write_chunk(
     return written, global_written
 
 
-def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str]:
+def split_file(input_file: Path, output_prefix: str, num_files: int, ext: str = "json") -> list[str]:
     """Split *input_file* into *num_files* chunks and return list of output paths.
 
     The last chunk absorbs any remainder lines so that no records are dropped.
@@ -140,7 +140,7 @@ def split_file(input_file: Path, output_prefix: str, num_files: int) -> list[str
     try:
         with open(input_file, encoding="utf-8") as f:
             for i in range(num_files):
-                output_filename = f"{output_prefix}{i + 1}.json"
+                output_filename = f"{output_prefix}{i + 1}.{ext}"
                 # Last chunk absorbs any remainder so no lines are dropped
                 chunk_size = lines_per_file + (remainder if i == num_files - 1 else 0)
                 try:
@@ -270,6 +270,12 @@ def main() -> None:
         help="Preview the split plan (line counts per chunk) without writing any files.",
     )
     parser.add_argument(
+        "--format",
+        choices=["jsonl", "json", "txt"],
+        default="jsonl",
+        help="Output file extension (default: jsonl). Affects filename suffix only; content is unchanged.",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",
@@ -301,8 +307,9 @@ def main() -> None:
             sys.exit(1)
         prefix = str(args.output_dir / args.output_prefix)
 
+    ext = args.format if args.format else "jsonl"
     try:
-        split_file(args.input_file, prefix, args.num_files)
+        split_file(args.input_file, prefix, args.num_files, ext=ext)
     except (FileNotFoundError, ValueError, OSError) as e:
         logger.error("%s", e)
         sys.exit(1)
