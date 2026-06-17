@@ -148,3 +148,38 @@ class DataExporter:
         if fmt == "csv":
             return self.to_csv(records, path, **kwargs)
         raise ValueError(f"Unsupported export format: {fmt!r}. Use 'jsonl', 'json', or 'csv'.")
+
+    def to_parquet_compatible(
+        self,
+        records: list[dict[str, Any]],
+        scalar_only: bool = True,
+    ) -> list[dict[str, Any]]:
+        """Flatten records to a Parquet-compatible structure (scalar values only).
+
+        Nested dicts and lists are JSON-serialised to strings, making the result
+        suitable for pandas ``DataFrame`` construction or Arrow conversion.
+
+        Args:
+            records: Records to flatten.
+            scalar_only: If True (default), convert non-scalar fields to JSON
+                strings.  If False, return records unchanged.
+
+        Returns:
+            List of dicts with flattened values.
+        """
+        import json as _json
+
+        if not scalar_only:
+            return list(records)
+
+        flat: list[dict[str, Any]] = []
+        for record in records:
+            row: dict[str, Any] = {}
+            for key, value in record.items():
+                if isinstance(value, (dict, list)):
+                    row[key] = _json.dumps(value, ensure_ascii=False)
+                else:
+                    row[key] = value
+            flat.append(row)
+        logger.info("to_parquet_compatible: %d records flattened.", len(flat))
+        return flat
