@@ -1,5 +1,5 @@
 .PHONY: install install-dev test lint type-check format run-validate run-benchmark \
-        analyze-sentiment generate-report pipeline-demo clean help
+        analyze-sentiment generate-report pipeline-demo deduplicate partition clean help
 
 PYTHON   := python3
 PIP      := pip
@@ -23,6 +23,8 @@ help:
 	@echo "  analyze-sentiment  Run sentiment analysis (INPUT=... OUTPUT=...)"
 	@echo "  generate-report    Generate processing report (INPUT=...)"
 	@echo "  pipeline-demo      Full demo: split → validate → sentiment → report"
+	@echo "  deduplicate        Deduplicate a JSONL file (FILE=... OUT=...)"
+	@echo "  partition          Partition a JSONL file by field (FILE=... FIELD=stars OUT_DIR=...)"
 	@echo "  clean              Remove generated files"
 
 install:
@@ -67,6 +69,16 @@ pipeline-demo:
 	@echo "=== Step 3: Generate report ==="
 	$(PYTHON) scripts/generate_report.py $(OUTPUT)/enriched.jsonl --output $(OUTPUT)/report.json
 	@echo "=== Done. Report: $(OUTPUT)/report.json ==="
+
+OUT     ?= output/deduped.jsonl
+FIELD   ?= stars
+OUT_DIR ?= output/partitions
+
+deduplicate:
+	$(PYTHON) scripts/deduplicate.py $(FILE) $(OUT) --stats
+
+partition:
+	$(PYTHON) scripts/partition_data.py $(FILE) $(OUT_DIR) --field $(FIELD)
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
