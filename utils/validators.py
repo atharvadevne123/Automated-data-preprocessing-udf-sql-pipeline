@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -290,3 +291,51 @@ def validate_yelp_review_record(record: dict[str, Any]) -> dict[str, Any]:
     coerce_record(record, ["review_id", "user_id", "business_id", "stars"])
     validate_star_rating(record["stars"])
     return record
+
+
+def validate_stars(value: float | int | str) -> float:
+    """Validate and coerce a star rating to a float in [1.0, 5.0].
+
+    Args:
+        value: Raw star value (numeric or string).
+
+    Returns:
+        Validated float star rating.
+
+    Raises:
+        ValidationError: If *value* cannot be coerced or is outside [1.0, 5.0].
+    """
+    try:
+        stars = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f"Cannot convert stars to float: {value!r}") from exc
+    if not (1.0 <= stars <= 5.0):
+        raise ValidationError(f"Star rating must be in [1.0, 5.0], got {stars}")
+    return stars
+
+
+_REVIEW_ID_RE = re.compile(r"^[A-Za-z0-9_\-]{1,100}$")
+
+
+def validate_review_id(review_id: str) -> str:
+    """Validate a Yelp-style review identifier.
+
+    Accepts alphanumeric strings with hyphens and underscores, 1–100 chars.
+
+    Args:
+        review_id: Candidate review ID string.
+
+    Returns:
+        The review ID unchanged if valid.
+
+    Raises:
+        ValidationError: If *review_id* is not a non-empty string or contains
+            invalid characters.
+    """
+    if not isinstance(review_id, str) or not review_id:
+        raise ValidationError("review_id must be a non-empty string.")
+    if not _REVIEW_ID_RE.match(review_id):
+        raise ValidationError(
+            f"review_id contains invalid characters or exceeds 100 chars: {review_id!r}"
+        )
+    return review_id
