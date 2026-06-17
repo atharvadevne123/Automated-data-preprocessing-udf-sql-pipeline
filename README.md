@@ -101,18 +101,20 @@ flowchart TD
 
 ## Features
 
-- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI; safely caps `--num-files` when it exceeds the line count; `--dry-run` preview mode
+- **Large-file splitter** — split 5 GB+ newline-delimited JSON into N chunks via CLI; safely caps `--num-files` when it exceeds the line count; `--dry-run` preview; `--format` for configurable output extension
 - **`--output-dir` support** — write all chunks to a dedicated directory (auto-created); combine with `--output-prefix` for full control over naming
-- **End-to-end pipeline** — `scripts/run_pipeline.py` orchestrates clean → sentiment → export in one command with configurable filters and output formats
-- **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative; `batch_execute()` for chunked INSERTs
+- **End-to-end pipeline** — `scripts/run_pipeline.py` orchestrates clean → sentiment → export in one command with configurable filters, output formats, and `--workers` for parallel processing
+- **Snowflake Python UDF** — `analyze_sentiment()` using TextBlob; returns Positive / Neutral / Negative; `batch_execute()` for chunked INSERTs; `copy_into_stage()` and `list_stage_files()` for internal stage management
 - **Flattened analytical tables** — `tbl_yelp_reviews` and `tbl_yelp_businesses` ready for SQL analytics
 - **`snowflake_connector.py`** — reads credentials from env vars; `execute_query()`, `health_check()`, `managed_connection()` context manager, `batch_execute()` chunked insert
-- **`pipeline/` package** — `FieldRenamer`, `TypeCoercer`, `ComputedFieldAdder` (transformer); `RecordJoiner` for left-joins; `StatsAggregator.merge()` for parallel aggregation; `analyze_stream()` lazy iterator
-- **`utils/` package** — structured logging, validators (`validate_date_format`, `validate_coordinates`, `validate_text_length`), `DictCache` with TTL, `RetryConfig`, `MemoryMetrics`, `FunctionProfiler`
+- **`pipeline/` package** — `FieldRenamer`, `TypeCoercer`, `ComputedFieldAdder` (transformer); `RecordJoiner` for left/inner/right joins; `StatsAggregator.merge()` for parallel aggregation; `analyze_stream()` lazy iterator; `RecordDeduplicator` with SHA-256 hashing; `ReservoirSampler` (Vitter's Algorithm R); `StratifiedSampler`; `RecordPartitioner`/`FilePartitioner`; `FieldNormalizer`; `DataExporter.to_parquet_compatible()`
+- **`utils/` package** — structured logging, validators, `DictCache` with TTL, `RetryConfig`, `MemoryMetrics`, `FunctionProfiler`, `AsyncTimer`, `TimeSeries`, `hash_utils`, `text_stats`, `schema_validator`, `file_utils`
 - **`scripts/validate_jsonl.py`** — validate JSONL for parse errors; `--required-fields` for schema checks
-- **`scripts/generate_report.py`** — JSON or Markdown report generation via `--format`
+- **`scripts/generate_report.py`** — JSON or Markdown report generation via `--format`; `--sections` to select output sections
+- **`scripts/deduplicate.py`** — deduplicate JSONL by key fields with optional stats output
+- **`scripts/partition_data.py`** — partition JSONL into multiple files by field value
 - **`scripts/benchmark.py`** — measure split throughput; `--output-json` saves metrics to file
-- **Expanded test suite** — 300+ parametrized pytest tests across 20+ test modules (90 %+ coverage)
+- **Expanded test suite** — 350+ parametrized pytest tests across 35+ test modules
 - **Security scanning** — `bandit` integrated in GitHub Actions CI alongside ruff and mypy
 - **Docker support** — multi-stage `Dockerfile` + `docker-compose.yml`
 - **Secure credential handling** — no credentials in code; `.env.example` with full comments; `python-dotenv` auto-loads `.env`
