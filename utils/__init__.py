@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from utils.cache import CacheStats, DictCache, LRUCache, cached
 from utils.logger import configure_root_logger, get_json_logger, get_logger
-from utils.metrics import MemoryMetrics, PipelineRunMetrics, SplitMetrics, Timer, ValidationMetrics
+from utils.file_utils import ensure_dir, file_line_count, file_size_mb, iter_jsonl, safe_read_json, write_jsonl
+from utils.hash_utils import content_hash_file, md5_hex, record_fingerprint, sha256_hex, short_id
+from utils.metrics import MemoryMetrics, PipelineRunMetrics, SplitMetrics, TimeSeries, Timer, ValidationMetrics
+from utils.schema_validator import FieldSpec, RecordSchemaValidator
+from utils.text_stats import TextStats, compute_text_stats, lexical_diversity, reading_level_estimate, top_n_words
+from utils.validators import validate_review_id, validate_stars
 from utils.profiler import FunctionProfiler, profile_memory, timed
 from utils.retry import MaxRetriesExceeded, RetryConfig, retry, retry_on_error
 from utils.validators import (
@@ -64,4 +69,31 @@ __all__ = [
     "FunctionProfiler",
     "timed",
     "profile_memory",
+    # hash utils
+    "sha256_hex",
+    "md5_hex",
+    "record_fingerprint",
+    "short_id",
+    "content_hash_file",
+    # file utils
+    "ensure_dir",
+    "file_line_count",
+    "file_size_mb",
+    "iter_jsonl",
+    "write_jsonl",
+    "safe_read_json",
+    # text stats
+    "TextStats",
+    "compute_text_stats",
+    "lexical_diversity",
+    "reading_level_estimate",
+    "top_n_words",
+    # schema validator
+    "FieldSpec",
+    "RecordSchemaValidator",
+    # metrics extras
+    "TimeSeries",
+    # validators extras
+    "validate_stars",
+    "validate_review_id",
 ]
