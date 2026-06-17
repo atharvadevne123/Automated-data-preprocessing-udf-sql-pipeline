@@ -272,8 +272,8 @@ def main() -> None:
     parser.add_argument(
         "--format",
         choices=["jsonl", "json", "txt"],
-        default="jsonl",
-        help="Output file extension (default: jsonl). Affects filename suffix only; content is unchanged.",
+        default="json",
+        help="Output file extension (default: json). Affects filename suffix only; content is unchanged.",
     )
     parser.add_argument(
         "--version",

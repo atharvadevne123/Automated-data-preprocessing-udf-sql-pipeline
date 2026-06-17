@@ -81,6 +81,7 @@ def run_pipeline(
     records_read = len(records)
     logger.info("Read %d records after filter/sample (workers=%d)", records_read, workers)
 
+    cleaner = TextCleaner(track_stats=True)
     if workers > 1 and records_read > 0:
         chunk_size = max(1, math.ceil(records_read / workers))
         chunks = [records[i : i + chunk_size] for i in range(0, records_read, chunk_size)]
@@ -91,7 +92,6 @@ def run_pipeline(
         if max_records is not None:
             cleaned = cleaned[:max_records]
     else:
-        cleaner = TextCleaner(track_stats=True)
         analyzer = SentimentAnalyzer()
         cleaned = []
         for rec in records:
@@ -112,6 +112,7 @@ def run_pipeline(
         "records_written": records_written,
         "elapsed_sec": round(elapsed, 3),
         "workers": workers,
+        "cleaner_stats": cleaner.stats.to_dict(),
     }
     logger.info("Pipeline complete: %d records written to %s in %.2fs", records_written, out_path, elapsed)
     return summary
