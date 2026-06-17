@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-06-17
+
+### Added
+- `pipeline/deduplicator.py` — `RecordDeduplicator` with SHA-256 hashing and `DeduplicationStats`
+- `pipeline/sampler.py` — `ReservoirSampler` (Vitter's Algorithm R) and `StratifiedSampler`
+- `pipeline/partitioner.py` — `RecordPartitioner` and `FilePartitioner` for JSONL output by key
+- `pipeline/normalizer.py` — `FieldNormalizer` with pluggable normalisation functions
+- `utils/hash_utils.py` — `sha256_hex`, `md5_hex`, `record_fingerprint`, `short_id`, `content_hash_file`
+- `utils/text_stats.py` — `TextStats`, `compute_text_stats`, `lexical_diversity`, `reading_level_estimate`, `top_n_words`
+- `utils/schema_validator.py` — `FieldSpec`, `ValidationResult`, `RecordSchemaValidator`
+- `utils/file_utils.py` — `iter_jsonl`, `write_jsonl`, `list_jsonl_files`, `file_size_mb`, `ensure_dir`
+- `scripts/deduplicate.py` — CLI for deduplicating JSONL files with `--key-fields` and `--stats`
+- `scripts/partition_data.py` — CLI for partitioning JSONL files by field value
+- `utils/profiler.py` — `AsyncTimer` async context manager for wall-clock timing
+- `pipeline/exporter.py` — `DataExporter.to_parquet_compatible()` for Parquet-friendly record flattening
+- `snowflake_connector.py` — `copy_into_stage()` and `list_stage_files()` for internal stage management
+- `models/yelp.py` — `YelpTip` Pydantic model with `word_count`, `is_valid_date`, `to_json` methods
+- `pipeline/aggregator.py` — `percentile_stars()` and `stddev_stars()` on `BusinessStats`
+- `pipeline/cleaner.py` — `extract_emails()` and `extract_phones()` static methods on `TextCleaner`
+- `utils/validators.py` — `validate_stars()` and `validate_review_id()` validators
+- `pipeline/joiner.py` — `inner_join()` and `right_join()` on `RecordJoiner`
+- `pipeline/transformer.py` — `ValueMapper` and `FieldDropper` transforms
+- `utils/metrics.py` — `TimeSeries` for named time-series metric recording
+- `scripts/generate_report.py` — `--sections` flag to select report output sections
+- `scripts/run_pipeline.py` — `--workers` flag for parallel cleaning/enrichment via `ProcessPoolExecutor`
+- `models/__init__.py` — exports `YelpTip`
+- `.github/ISSUE_TEMPLATE/` — bug report and feature request templates
+- `.github/PULL_REQUEST_TEMPLATE.md` — standardised PR checklist
+- `docs/api_reference.md` — quick-reference for all v1.4.0 additions
+- 20+ new test modules covering all new functionality
+- `Makefile` — `deduplicate` and `partition` convenience targets
+
+### Fixed
+- `.github/workflows/ci.yml` — updated to `actions/checkout@v4`, `actions/setup-python@v5`, `actions/upload-artifact@v4` with pip caching
+
 ## [1.3.0] — 2026-05-25
 
 ### Added
