@@ -18,7 +18,7 @@ _MULTI_SPACE_RE = re.compile(r"\s+")
 _PUNCTUATION_REPEAT_RE = re.compile(r"([!?.]){3,}")
 _PUNCTUATION_RE = re.compile(r"[" + re.escape(string.punctuation) + r"]")
 _EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
-_PHONE_RE = re.compile(r"\+?[\d][\d\s\-().]{7,}\d")
+_PHONE_RE = re.compile(r"\+?[\d][\d\s\-().]{5,}\d")
 
 
 @dataclass
