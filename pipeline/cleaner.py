@@ -17,6 +17,8 @@ _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _MULTI_SPACE_RE = re.compile(r"\s+")
 _PUNCTUATION_REPEAT_RE = re.compile(r"([!?.]){3,}")
 _PUNCTUATION_RE = re.compile(r"[" + re.escape(string.punctuation) + r"]")
+_EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
+_PHONE_RE = re.compile(r"\+?[\d][\d\s\-().]{7,}\d")
 
 
 @dataclass
@@ -170,3 +172,33 @@ class TextCleaner:
         if not isinstance(text, str):
             return ""
         return _MULTI_SPACE_RE.sub(" ", text).strip()
+
+    @staticmethod
+    def extract_emails(text: str) -> list[str]:
+        """Return all email addresses found in *text*.
+
+        Args:
+            text: Input string.
+
+        Returns:
+            List of matched email strings (may be empty).
+        """
+        if not isinstance(text, str):
+            return []
+        return _EMAIL_RE.findall(text)
+
+    @staticmethod
+    def extract_phones(text: str) -> list[str]:
+        """Return all phone-number-like substrings found in *text*.
+
+        The pattern matches international and North-American formats.
+
+        Args:
+            text: Input string.
+
+        Returns:
+            List of matched phone strings (may be empty).
+        """
+        if not isinstance(text, str):
+            return []
+        return _PHONE_RE.findall(text)
