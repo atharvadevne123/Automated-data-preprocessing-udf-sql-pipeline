@@ -224,3 +224,50 @@ class YelpPhoto(BaseModel):
         return json.dumps(
             self.model_dump() if hasattr(self, "model_dump") else self.dict(), indent=indent, ensure_ascii=False
         )
+
+
+class YelpTip(BaseModel):
+    """Represents a Yelp tip (short user advice attached to a business).
+
+    Tips are shorter than reviews and lack a star rating.
+
+    Attributes:
+        user_id: Unique 22-character user identifier.
+        business_id: Unique 22-character business identifier.
+        text: Tip text content.
+        date: Date string (YYYY-MM-DD or ISO 8601).
+        compliment_count: Number of compliments received.
+    """
+
+    user_id: str = Field(..., min_length=1)
+    business_id: str = Field(..., min_length=1)
+    text: str = Field(default="")
+    date: str = Field(default="")
+    compliment_count: int = Field(default=0, ge=0)
+
+    def __repr__(self) -> str:
+        return (
+            f"YelpTip(user_id={self.user_id!r}, business_id={self.business_id!r}, "
+            f"date={self.date!r})"
+        )
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "YelpTip":
+        """Construct a :class:`YelpTip` from a raw dict."""
+        return cls(**data)
+
+    def word_count(self) -> int:
+        """Return the number of words in the tip text."""
+        return len(self.text.split()) if self.text.strip() else 0
+
+    def is_valid_date(self) -> bool:
+        """Return True if *date* matches the YYYY-MM-DD pattern."""
+        return bool(_DATE_RE.match(self.date))
+
+    def to_json(self, indent: int | None = None) -> str:
+        """Serialise this tip to a JSON string."""
+        return json.dumps(
+            self.model_dump() if hasattr(self, "model_dump") else self.dict(),
+            indent=indent,
+            ensure_ascii=False,
+        )
