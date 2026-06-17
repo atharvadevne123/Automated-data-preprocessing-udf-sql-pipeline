@@ -48,30 +48,38 @@ def aggregate_jsonl(input_path: Path) -> StatsAggregator:
     return agg
 
 
-def build_report(agg: StatsAggregator, top_n: int = 10) -> dict:
+_ALL_SECTIONS = {"summary", "star_distribution", "top_businesses"}
+
+
+def build_report(agg: StatsAggregator, top_n: int = 10, sections: set[str] | None = None) -> dict:
     """Build a JSON-serialisable report dict from aggregated stats.
 
     Args:
         agg: Populated StatsAggregator instance.
         top_n: Number of top businesses to include.
+        sections: Set of section names to include; all sections included if None.
+            Valid values: ``'summary'``, ``'star_distribution'``, ``'top_businesses'``.
 
     Returns:
-        Report dict with ``summary``, ``top_businesses``, and ``star_distribution`` keys.
+        Report dict with requested section keys.
     """
+    include = sections if sections is not None else _ALL_SECTIONS
     global_stats = agg.global_stats().to_dict()
-    top_biz = [b.to_dict() for b in agg.top_businesses(n=top_n)]
     all_biz = agg.all_business_stats()
-    avg_review_count = sum(b["review_count"] for b in all_biz) / len(all_biz) if all_biz else 0.0
-    return {
-        "summary": {
+    report: dict = {}
+    if "summary" in include:
+        avg_review_count = sum(b["review_count"] for b in all_biz) / len(all_biz) if all_biz else 0.0
+        report["summary"] = {
             "total_records": global_stats["total_records"],
             "unique_businesses": len(all_biz),
             "average_reviews_per_business": round(avg_review_count, 2),
             "sentiment_counts": global_stats["sentiment_counts"],
-        },
-        "star_distribution": global_stats["star_distribution"],
-        "top_businesses": top_biz,
-    }
+        }
+    if "star_distribution" in include:
+        report["star_distribution"] = global_stats["star_distribution"]
+    if "top_businesses" in include:
+        report["top_businesses"] = [b.to_dict() for b in agg.top_businesses(n=top_n)]
+    return report
 
 
 def build_markdown_report(report: dict) -> str:
@@ -83,43 +91,46 @@ def build_markdown_report(report: dict) -> str:
     Returns:
         Markdown-formatted report string.
     """
-    summary = report["summary"]
-    lines: list[str] = [
-        "# Pipeline Report",
-        "",
-        "## Summary",
-        "",
-        "| Metric | Value |",
-        "|--------|-------|",
-        f"| Total records | {summary['total_records']} |",
-        f"| Unique businesses | {summary['unique_businesses']} |",
-        f"| Avg reviews/business | {summary['average_reviews_per_business']} |",
-        "",
-        "### Sentiment Counts",
-        "",
-        "| Sentiment | Count |",
-        "|-----------|-------|",
-    ]
-    for sentiment, count in summary.get("sentiment_counts", {}).items():
-        lines.append(f"| {sentiment} | {count} |")
+    lines: list[str] = ["# Pipeline Report", ""]
+    if "summary" in report:
+        summary = report["summary"]
+        lines += [
+            "## Summary",
+            "",
+            "| Metric | Value |",
+            "|--------|-------|",
+            f"| Total records | {summary['total_records']} |",
+            f"| Unique businesses | {summary['unique_businesses']} |",
+            f"| Avg reviews/business | {summary['average_reviews_per_business']} |",
+            "",
+            "### Sentiment Counts",
+            "",
+            "| Sentiment | Count |",
+            "|-----------|-------|",
+        ]
+        for sentiment, count in summary.get("sentiment_counts", {}).items():
+            lines.append(f"| {sentiment} | {count} |")
+        lines.append("")
 
-    lines += [
-        "",
-        "## Star Distribution",
-        "",
-        "| Stars | Count |",
-        "|-------|-------|",
-    ]
-    for star, count in sorted(report.get("star_distribution", {}).items()):
-        lines.append(f"| {star} | {count} |")
+    if "star_distribution" in report:
+        lines += [
+            "## Star Distribution",
+            "",
+            "| Stars | Count |",
+            "|-------|-------|",
+        ]
+        for star, count in sorted(report.get("star_distribution", {}).items()):
+            lines.append(f"| {star} | {count} |")
+        lines.append("")
 
-    lines += ["", "## Top Businesses", ""]
-    for biz in report.get("top_businesses", []):
-        lines.append(
-            f"- **{biz.get('business_id', 'unknown')}**: "
-            f"{biz.get('review_count', 0)} reviews, "
-            f"avg {biz.get('avg_stars', 0):.2f} stars"
-        )
+    if "top_businesses" in report:
+        lines += ["## Top Businesses", ""]
+        for biz in report.get("top_businesses", []):
+            lines.append(
+                f"- **{biz.get('business_id', 'unknown')}**: "
+                f"{biz.get('review_count', 0)} reviews, "
+                f"avg {biz.get('avg_stars', 0):.2f} stars"
+            )
 
     return "\n".join(lines) + "\n"
 
@@ -153,11 +164,20 @@ def main(argv: list[str] | None = None) -> int:
         choices=["json", "markdown"],
         help="Output format: 'json' (default) or 'markdown'.",
     )
+    parser.add_argument(
+        "--sections",
+        nargs="+",
+        choices=sorted(_ALL_SECTIONS),
+        default=None,
+        metavar="SECTION",
+        help="Sections to include (default: all). Choices: summary, star_distribution, top_businesses.",
+    )
     args = parser.parse_args(argv)
 
+    sections = set(args.sections) if args.sections else None
     try:
         agg = aggregate_jsonl(args.input)
-        report = build_report(agg, top_n=args.top_n)
+        report = build_report(agg, top_n=args.top_n, sections=sections)
     except (FileNotFoundError, ValueError) as exc:
         logger.error("%s", exc)
         return 1
