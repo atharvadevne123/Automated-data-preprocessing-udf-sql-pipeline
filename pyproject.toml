@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "automated-data-preprocessing-udf-sql-pipeline"
-version = "1.3.0"
+version = "1.4.0"
 description = "Automated data preprocessing pipeline with UDF SQL functions"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -36,6 +36,8 @@ validate-jsonl = "scripts.validate_jsonl:main"
 analyze-sentiment = "scripts.analyze_sentiment:main"
 generate-report = "scripts.generate_report:main"
 run-pipeline = "scripts.run_pipeline:main"
+deduplicate-jsonl = "scripts.deduplicate:main"
+partition-jsonl = "scripts.partition_data:main"
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "venv"]
