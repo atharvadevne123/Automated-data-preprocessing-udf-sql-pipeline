@@ -155,3 +155,83 @@ class ComputedFieldAdder:
             List of dicts with computed fields added.
         """
         return [self.transform(r) for r in records]
+
+
+class ValueMapper:
+    """Replace field values using a mapping table.
+
+    Args:
+        field: Name of the field to map.
+        mapping: Dict of ``{old_value: new_value}`` substitutions.
+        default: Value to use when the original is not in *mapping*.
+            ``None`` means keep the original value unchanged.
+
+    Example::
+
+        mapper = ValueMapper("sentiment", {"pos": "positive", "neg": "negative"})
+        out = mapper.transform({"sentiment": "pos"})
+        # {"sentiment": "positive"}
+    """
+
+    def __init__(
+        self,
+        field: str,
+        mapping: dict[Any, Any],
+        default: Any = None,
+    ) -> None:
+        self._field = field
+        self._mapping = mapping
+        self._default = default
+
+    def transform(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Return a copy of *record* with the mapped value applied.
+
+        Args:
+            record: Input dict.
+
+        Returns:
+            Copy of *record* with ``field`` value substituted.
+        """
+        result = dict(record)
+        if self._field in result:
+            original = result[self._field]
+            if original in self._mapping:
+                result[self._field] = self._mapping[original]
+            elif self._default is not None:
+                result[self._field] = self._default
+        return result
+
+    def transform_batch(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Apply :meth:`transform` to a list of records."""
+        return [self.transform(r) for r in records]
+
+
+class FieldDropper:
+    """Remove specified fields from each record.
+
+    Args:
+        fields: Field names to drop.
+
+    Example::
+
+        dropper = FieldDropper(["_internal", "debug"])
+        clean = dropper.transform(record)
+    """
+
+    def __init__(self, fields: list[str]) -> None:
+        self._fields: set[str] = set(fields)
+
+    def transform(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Return a copy of *record* with listed fields removed.
+
+        Args:
+            record: Input dict.
+
+        Returns:
+            New dict without the dropped fields.
+        """
+        return {k: v for k, v in record.items() if k not in self._fields}
+
+    def transform_batch(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Apply :meth:`transform` to a list of records."""
+        return [self.transform(r) for r in records]
