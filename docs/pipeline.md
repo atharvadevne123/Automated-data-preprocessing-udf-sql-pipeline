@@ -72,3 +72,54 @@ exporter.export(records, Path("output/data.json"), fmt="json")
 ```
 
 Supported formats: `jsonl`, `json`, `csv`.
+
+## RecordDeduplicator
+
+```python
+from pipeline.deduplicator import RecordDeduplicator
+
+dedup = RecordDeduplicator(key_fields=["review_id"], track_stats=True)
+unique = list(dedup.deduplicate(records))
+print(dedup.stats.duplicates_dropped, dedup.stats.unique_count)
+```
+
+Hashes the concatenated values of `key_fields` with SHA-256 to detect duplicates in a single pass.
+
+## ReservoirSampler / StratifiedSampler
+
+```python
+from pipeline.sampler import ReservoirSampler, StratifiedSampler
+
+rs = ReservoirSampler(size=1000, seed=42)
+rs.add_batch(records)
+sample = rs.get_sample()
+
+ss = StratifiedSampler(key_field="stars", sample_rate=0.1)
+stratified = ss.sample(records)
+```
+
+## RecordPartitioner / FilePartitioner
+
+```python
+from pipeline.partitioner import FilePartitioner
+from pathlib import Path
+
+fp = FilePartitioner(
+    key_func=lambda r: str(int(r["stars"])),
+    output_dir=Path("output/partitions"),
+    prefix="stars",
+)
+fp.add_batch(records)
+fp.flush()  # writes stars_1.jsonl … stars_5.jsonl
+```
+
+## FieldNormalizer
+
+```python
+from pipeline.normalizer import FieldNormalizer
+
+norm = FieldNormalizer()
+norm.register("stars", FieldNormalizer.normalise_stars)
+norm.register("text", FieldNormalizer.lowercase_strip)
+normalised = norm.normalise_batch(records)
+```
