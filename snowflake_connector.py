@@ -277,3 +277,42 @@ def get_table_row_count(conn: Any, table_name: str) -> int:
     """
     rows = execute_query(conn, f"SELECT COUNT(*) FROM {table_name}")  # noqa: S608
     return int(rows[0][0]) if rows else 0
+
+
+def copy_into_stage(
+    conn: Any,
+    stage_name: str,
+    local_path: str,
+    file_format: str = "TYPE=JSON",
+) -> list[tuple[Any, ...]]:
+    """Upload a local file to a named Snowflake internal stage.
+
+    Args:
+        conn: Open Snowflake connection.
+        stage_name: Name of the Snowflake stage (e.g. ``'@my_stage'``).
+        local_path: Absolute local filesystem path to the file to upload.
+        file_format: Snowflake FILE FORMAT clause (default ``'TYPE=JSON'``).
+
+    Returns:
+        List of result rows from the PUT command.
+
+    Raises:
+        Exception: On Snowflake execution error.
+    """
+    put_sql = f"PUT 'file://{local_path}' {stage_name} FILE_FORMAT = ({file_format})"  # noqa: S608
+    logger.info("Uploading %s to stage %s", local_path, stage_name)
+    return execute_query(conn, put_sql)
+
+
+def list_stage_files(conn: Any, stage_name: str) -> list[str]:
+    """List all files in a Snowflake internal stage.
+
+    Args:
+        conn: Open Snowflake connection.
+        stage_name: Stage name (e.g. ``'@my_stage'``).
+
+    Returns:
+        List of file path strings in the stage.
+    """
+    rows = execute_query(conn, f"LIST {stage_name}")  # noqa: S608
+    return [str(row[0]) for row in (rows or [])]
