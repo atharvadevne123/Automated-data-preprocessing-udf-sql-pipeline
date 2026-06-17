@@ -116,3 +116,34 @@ def profile_memory(label: str = "") -> dict[str, Any]:
         "current_mb": round(current / (1024 * 1024), 4),
         "peak_mb": round(peak / (1024 * 1024), 4),
     }
+
+
+class AsyncTimer:
+    """Async context manager that measures wall-clock elapsed time.
+
+    Example::
+
+        async with AsyncTimer("fetch") as t:
+            await fetch_data()
+        print(t.elapsed_sec)
+    """
+
+    def __init__(self, label: str = "") -> None:
+        import time as _time
+
+        self.label = label
+        self._time = _time
+        self.elapsed_sec: float = 0.0
+        self._start: float = 0.0
+
+    async def __aenter__(self) -> "AsyncTimer":
+        self._start = self._time.perf_counter()
+        return self
+
+    async def __aexit__(self, *_: object) -> None:
+        self.elapsed_sec = self._time.perf_counter() - self._start
+        logger.debug("AsyncTimer[%s]: %.4fs", self.label, self.elapsed_sec)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-serialisable summary."""
+        return {"label": self.label, "elapsed_sec": round(self.elapsed_sec, 6)}
