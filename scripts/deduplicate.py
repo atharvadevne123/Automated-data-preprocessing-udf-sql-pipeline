@@ -23,9 +23,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     Returns:
         Parsed namespace.
     """
-    parser = argparse.ArgumentParser(
-        description="Deduplicate records in a JSONL file using hash-based comparison."
-    )
+    parser = argparse.ArgumentParser(description="Deduplicate records in a JSONL file using hash-based comparison.")
     parser.add_argument("input", type=Path, help="Input JSONL file path.")
     parser.add_argument("output", type=Path, help="Output JSONL file path.")
     parser.add_argument(
@@ -70,8 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.stats:
         s = dedup.stats
         print(
-            f"Total: {s.total_seen}  Duplicates: {s.duplicates_dropped}"
-            f"  Unique: {s.unique_count}",
+            f"Total: {s.total_seen}  Duplicates: {s.duplicates_dropped}  Unique: {s.unique_count}",
             file=sys.stderr,
         )
 

@@ -246,10 +246,7 @@ class YelpTip(BaseModel):
     compliment_count: int = Field(default=0, ge=0)
 
     def __repr__(self) -> str:
-        return (
-            f"YelpTip(user_id={self.user_id!r}, business_id={self.business_id!r}, "
-            f"date={self.date!r})"
-        )
+        return f"YelpTip(user_id={self.user_id!r}, business_id={self.business_id!r}, date={self.date!r})"
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "YelpTip":

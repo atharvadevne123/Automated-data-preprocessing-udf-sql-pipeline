@@ -10,10 +10,12 @@ from pipeline.joiner import RecordJoiner
 @pytest.fixture()
 def joiner() -> RecordJoiner:
     j = RecordJoiner(lookup_key="business_id", prefix="biz_")
-    j.load_lookup([
-        {"business_id": "A", "name": "Alpha"},
-        {"business_id": "B", "name": "Beta"},
-    ])
+    j.load_lookup(
+        [
+            {"business_id": "A", "name": "Alpha"},
+            {"business_id": "B", "name": "Beta"},
+        ]
+    )
     return j
 
 

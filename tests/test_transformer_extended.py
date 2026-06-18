@@ -46,9 +46,7 @@ class TestValueMapper:
         result = mapper.transform({"k": "b"})
         assert result["k"] == "b"
 
-    @pytest.mark.parametrize("val,expected", [
-        ("pos", "positive"), ("neg", "negative"), ("neu", "neutral")
-    ])
+    @pytest.mark.parametrize("val,expected", [("pos", "positive"), ("neg", "negative"), ("neu", "neutral")])
     def test_sentiment_mapping(self, val: str, expected: str) -> None:
         mapper = ValueMapper(
             "sent",

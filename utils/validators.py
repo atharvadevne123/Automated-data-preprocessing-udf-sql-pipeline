@@ -335,7 +335,5 @@ def validate_review_id(review_id: str) -> str:
     if not isinstance(review_id, str) or not review_id:
         raise ValidationError("review_id must be a non-empty string.")
     if not _REVIEW_ID_RE.match(review_id):
-        raise ValidationError(
-            f"review_id contains invalid characters or exceeds 100 chars: {review_id!r}"
-        )
+        raise ValidationError(f"review_id contains invalid characters or exceeds 100 chars: {review_id!r}")
     return review_id

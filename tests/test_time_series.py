@@ -74,14 +74,15 @@ class TestTimeSeries:
         ts = TimeSeries("empty")
         assert ts.max() == 0.0
 
-    @pytest.mark.parametrize("n_records,max_points,expected_count", [
-        (5, 10, 5),
-        (10, 5, 5),
-        (1, 1, 1),
-    ])
-    def test_max_points_parametrized(
-        self, n_records: int, max_points: int, expected_count: int
-    ) -> None:
+    @pytest.mark.parametrize(
+        "n_records,max_points,expected_count",
+        [
+            (5, 10, 5),
+            (10, 5, 5),
+            (1, 1, 1),
+        ],
+    )
+    def test_max_points_parametrized(self, n_records: int, max_points: int, expected_count: int) -> None:
         ts = TimeSeries("test", max_points=max_points)
         for i in range(n_records):
             ts.record(float(i))

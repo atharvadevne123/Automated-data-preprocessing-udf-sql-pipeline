@@ -80,9 +80,7 @@ class TestYelpTip:
         raw = tip.to_json(indent=2)
         assert "\n" in raw
 
-    @pytest.mark.parametrize("text,expected_count", [
-        ("one", 1), ("one two", 2), ("", 0), ("a b c d e", 5)
-    ])
+    @pytest.mark.parametrize("text,expected_count", [("one", 1), ("one two", 2), ("", 0), ("a b c d e", 5)])
     def test_word_count_parametrized(self, text: str, expected_count: int) -> None:
         tip = self._make_tip(text=text)
         assert tip.word_count() == expected_count

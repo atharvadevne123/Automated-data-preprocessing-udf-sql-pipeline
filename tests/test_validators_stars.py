@@ -39,9 +39,7 @@ class TestValidateStars:
         with pytest.raises(ValidationError):
             validate_stars(None)  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("value,expected", [
-        (1, 1.0), (2.5, 2.5), (5, 5.0), ("3", 3.0)
-    ])
+    @pytest.mark.parametrize("value,expected", [(1, 1.0), (2.5, 2.5), (5, 5.0), ("3", 3.0)])
     def test_parametrized_valid(self, value: object, expected: float) -> None:
         assert validate_stars(value) == pytest.approx(expected)
 

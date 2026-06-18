@@ -288,9 +288,7 @@ class StatsAggregator:
         if total_count < 2:
             return 0.0
         mean = self.mean_stars()
-        variance = sum(
-            count * (float(star) - mean) ** 2 for star, count in dist.items()
-        ) / total_count
+        variance = sum(count * (float(star) - mean) ** 2 for star, count in dist.items()) / total_count
         return variance**0.5
 
     def reset(self) -> None:

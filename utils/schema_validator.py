@@ -108,45 +108,31 @@ class RecordSchemaValidator:
             if spec.type != "any":
                 expected = self._TYPE_MAP.get(spec.type)
                 if expected and not isinstance(value, expected):
-                    errors.append(
-                        f"Field '{spec.name}' expected {spec.type}, got {type(value).__name__}."
-                    )
+                    errors.append(f"Field '{spec.name}' expected {spec.type}, got {type(value).__name__}.")
                     continue
 
             if spec.min_value is not None and isinstance(value, (int, float)):
                 if value < spec.min_value:
-                    errors.append(
-                        f"Field '{spec.name}' value {value} < min_value {spec.min_value}."
-                    )
+                    errors.append(f"Field '{spec.name}' value {value} < min_value {spec.min_value}.")
 
             if spec.max_value is not None and isinstance(value, (int, float)):
                 if value > spec.max_value:
-                    errors.append(
-                        f"Field '{spec.name}' value {value} > max_value {spec.max_value}."
-                    )
+                    errors.append(f"Field '{spec.name}' value {value} > max_value {spec.max_value}.")
 
             if spec.min_length is not None and isinstance(value, (str, list)):
                 if len(value) < spec.min_length:
-                    errors.append(
-                        f"Field '{spec.name}' length {len(value)} < min_length {spec.min_length}."
-                    )
+                    errors.append(f"Field '{spec.name}' length {len(value)} < min_length {spec.min_length}.")
 
             if spec.max_length is not None and isinstance(value, (str, list)):
                 if len(value) > spec.max_length:
-                    errors.append(
-                        f"Field '{spec.name}' length {len(value)} > max_length {spec.max_length}."
-                    )
+                    errors.append(f"Field '{spec.name}' length {len(value)} > max_length {spec.max_length}.")
 
             if spec.allowed_values and value not in spec.allowed_values:
-                errors.append(
-                    f"Field '{spec.name}' value {value!r} not in allowed set."
-                )
+                errors.append(f"Field '{spec.name}' value {value!r} not in allowed set.")
 
         return ValidationResult(valid=len(errors) == 0, errors=errors)
 
-    def validate_batch(
-        self, records: list[dict[str, Any]]
-    ) -> list[ValidationResult]:
+    def validate_batch(self, records: list[dict[str, Any]]) -> list[ValidationResult]:
         """Validate each record in *records*.
 
         Args:
@@ -167,7 +153,5 @@ class RecordSchemaValidator:
             Subset of *records* that are valid.
         """
         valid = [r for r in records if self.validate(r).valid]
-        logger.info(
-            "SchemaValidator: %d/%d records valid.", len(valid), len(records)
-        )
+        logger.info("SchemaValidator: %d/%d records valid.", len(valid), len(records))
         return valid

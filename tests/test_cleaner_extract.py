@@ -34,11 +34,14 @@ class TestExtractEmails:
         result = TextCleaner.extract_emails("user@mail.example.co.uk")
         assert len(result) == 1
 
-    @pytest.mark.parametrize("text,count", [
-        ("a@b.com", 1),
-        ("no at sign", 0),
-        ("x@y.org z@w.net", 2),
-    ])
+    @pytest.mark.parametrize(
+        "text,count",
+        [
+            ("a@b.com", 1),
+            ("no at sign", 0),
+            ("x@y.org z@w.net", 2),
+        ],
+    )
     def test_parametrized(self, text: str, count: int) -> None:
         assert len(TextCleaner.extract_emails(text)) == count
 
@@ -61,10 +64,13 @@ class TestExtractPhones:
         result = TextCleaner.extract_phones("+1 800 555 0100")
         assert len(result) >= 1
 
-    @pytest.mark.parametrize("text", [
-        "Call us at 555-1234.",
-        "Reach us at +1 (800) 555-0100.",
-    ])
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Call us at 555-1234.",
+            "Reach us at +1 (800) 555-0100.",
+        ],
+    )
     def test_common_formats(self, text: str) -> None:
         result = TextCleaner.extract_phones(text)
         assert len(result) >= 1

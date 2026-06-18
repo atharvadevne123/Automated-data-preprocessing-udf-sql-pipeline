@@ -14,12 +14,14 @@ from pipeline.sampler import ReservoirSampler
 def _make_records(n: int = 20) -> list[dict]:
     records = []
     for i in range(n):
-        records.append({
-            "review_id": f"r{i:04d}",
-            "business_id": f"biz{i % 5}",
-            "stars": (i % 5) + 1,
-            "text": f"Review number {i} about this place",
-        })
+        records.append(
+            {
+                "review_id": f"r{i:04d}",
+                "business_id": f"biz{i % 5}",
+                "stars": (i % 5) + 1,
+                "text": f"Review number {i} about this place",
+            }
+        )
     # Add duplicates
     records += records[:3]
     return records

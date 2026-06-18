@@ -23,9 +23,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     Returns:
         Parsed namespace.
     """
-    parser = argparse.ArgumentParser(
-        description="Partition a JSONL file into separate files by a field value."
-    )
+    parser = argparse.ArgumentParser(description="Partition a JSONL file into separate files by a field value.")
     parser.add_argument("input", type=Path, help="Input JSONL file path.")
     parser.add_argument("output_dir", type=Path, help="Directory for output partition files.")
     parser.add_argument(

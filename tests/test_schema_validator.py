@@ -39,11 +39,13 @@ class TestValidationResult:
 
 class TestRecordSchemaValidator:
     def _validator(self) -> RecordSchemaValidator:
-        return RecordSchemaValidator([
-            FieldSpec("stars", type="float", min_value=1.0, max_value=5.0),
-            FieldSpec("text", type="str", min_length=1),
-            FieldSpec("category", type="str", required=False),
-        ])
+        return RecordSchemaValidator(
+            [
+                FieldSpec("stars", type="float", min_value=1.0, max_value=5.0),
+                FieldSpec("text", type="str", min_length=1),
+                FieldSpec("category", type="str", required=False),
+            ]
+        )
 
     def test_valid_record(self) -> None:
         v = self._validator()
@@ -82,9 +84,11 @@ class TestRecordSchemaValidator:
         assert result.valid
 
     def test_allowed_values(self) -> None:
-        v = RecordSchemaValidator([
-            FieldSpec("status", type="str", allowed_values={"active", "inactive"}),
-        ])
+        v = RecordSchemaValidator(
+            [
+                FieldSpec("status", type="str", allowed_values={"active", "inactive"}),
+            ]
+        )
         assert v.validate({"status": "active"}).valid
         assert not v.validate({"status": "pending"}).valid
 
@@ -109,9 +113,11 @@ class TestRecordSchemaValidator:
         assert len(valid) == 1
 
     def test_max_length_string(self) -> None:
-        v = RecordSchemaValidator([
-            FieldSpec("code", type="str", max_length=3),
-        ])
+        v = RecordSchemaValidator(
+            [
+                FieldSpec("code", type="str", max_length=3),
+            ]
+        )
         assert v.validate({"code": "ab"}).valid
         assert not v.validate({"code": "abcd"}).valid
 
